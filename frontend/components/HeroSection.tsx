@@ -5,8 +5,16 @@ import {
   TrendingUp,
   DollarSign,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export function HeroSection() {
+  const [scrollY, setScrollY] = useState(0);
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <section
       className="relative px-6 py-20"
