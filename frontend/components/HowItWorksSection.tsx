@@ -18,9 +18,6 @@ export function HowItWorksSection() {
               </div>
     
               <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-                {/* Connection Lines */}
-                <div className="hidden md:block absolute top-1/2 left-1/3 w-1/3 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-30"></div>
-                <div className="hidden md:block absolute top-1/2 right-1/3 w-1/3 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-30"></div>
     
                 {[
                   {
@@ -54,7 +51,7 @@ export function HowItWorksSection() {
                       <div className="bg-gradient-to-r from-blue-500 to-indigo-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300">
                         <step.icon className="h-8 w-8 text-white" />
                       </div>
-                      <div className="absolute -top-2 -right-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center animate-pulse">
+                      <div className="absolute -top-2 -right-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center">
                         {step.step}
                       </div>
                     </div>

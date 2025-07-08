@@ -28,28 +28,30 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-sm border border-blue-500/30 rounded-full px-6 py-3 mb-8 animate-fadeInUp">
             <Sparkles className="h-4 w-4 text-blue-400 animate-pulse" />
             <span className="text-sm text-blue-300 font-medium">
-              AI-Powered Financial Intelligence
+              AI Financial Insights
             </span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fadeInUp delay-200">
-            Transform Your
+            Understand Your
             <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent block animate-gradient">
-              Financial Future
+              Monthly Spending
             </span>
           </h1>
 
             <p className="text-md md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed animate-fadeInUp delay-400">
-            Upload your bank statement to get instant AI insights, spot spending trends, and discover ways to save more.
+            Upload your bank statement to instantly calculate your financial runway, understand your daily spending patterns, and identify where your money goes each month.
             </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp delay-600">
             <Link
               href="/upload-statement"
-              className="group bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl flex items-center justify-center"
+              className="group relative bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 hover:from-blue-500 hover:via-indigo-600 hover:to-purple-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-500 hover:scale-105 hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] flex items-center justify-center overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700 before:ease-out"
             >
-              Analyze My Spending
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              <span className="relative flex items-center group-hover:animate-pulse">
+                Analyze My Spending
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform duration-500 ease-out group-hover:animate-bounce" />
+              </span>
             </Link>
             {/* <button className="border-2 border-gray-600 text-gray-300 hover:bg-white/10 hover:border-white/30 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105">
               Watch Demo

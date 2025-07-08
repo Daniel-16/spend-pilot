@@ -16,7 +16,7 @@ export function CTASection() {
             and accelerated their savings with AI-powered insights.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="group bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-12 py-6 rounded-lg text-xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-pulse">
+            <button className="group bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-12 py-6 rounded-lg text-xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl">
               <span className="flex items-center justify-center">
                 Start Your Analysis Now
                 <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
