@@ -1,8 +1,8 @@
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-800 px-6 py-12">
+    <footer className="border-t border-white/10 px-6 py-12 bg-black/20">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center gap-3 mb-4 md:mb-0">
@@ -14,13 +14,22 @@ export function Footer() {
             </span>
           </div>
           <div className="flex items-center gap-8 text-gray-400">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Support</a>
+            <a href="#" className="hover:text-white transition-colors">
+              Privacy
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              Terms
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              Support
+            </a>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2025 SpendPilot. All rights reserved. Built with AI-powered financial intelligence.</p>
+        <div className="border-t border-white/10 mt-8 pt-8 text-center text-gray-400">
+          <p>
+            &copy; 2025 SpendPilot. All rights reserved. Built with AI-powered
+            financial intelligence.
+          </p>
         </div>
       </div>
     </footer>
