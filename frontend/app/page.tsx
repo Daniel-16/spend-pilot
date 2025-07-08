@@ -1,3 +1,5 @@
+"use client";
+
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { StatSection } from "@/components/StatSection";
@@ -6,23 +8,26 @@ import { HowItWorksSection } from "@/components/HowItWorksSection";
 import { CTASection } from "@/components/CTASection";
 import { Footer } from "@/components/Footer";
 
-const LandingPage = () => {  
-
+const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 text-white overflow-hidden relative">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#312e81] to-[#a21caf] text-white overflow-x-hidden relative font-sans">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-1/4 left-1/4 w-[32rem] h-[32rem] bg-blue-400/20 rounded-full blur-[120px] shadow-2xl animate-pulse"></div>
+        <div className="absolute top-2/3 right-1/4 w-[24rem] h-[24rem] bg-fuchsia-500/20 rounded-full blur-[100px] shadow-xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-[28rem] h-[28rem] bg-indigo-400/20 rounded-full blur-[100px] shadow-xl animate-pulse delay-2000"></div>
+        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white/10 to-transparent z-10" />
+        <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-white/10 to-transparent z-10" />
       </div>
 
-      <Navigation />
-      <HeroSection />
-      <StatSection />
-      <FeaturesSection />
-      <HowItWorksSection />    
-      <CTASection />
-      <Footer />
+      <div className="relative z-10">
+        <Navigation />
+        <HeroSection />
+        <StatSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <CTASection />
+        <Footer />
+      </div>
 
       <style jsx>{`
         @keyframes fadeInUp {
@@ -47,7 +52,7 @@ const LandingPage = () => {
         }
 
         .animate-fadeInUp {
-          animation: fadeInUp 0.8s ease-out both;
+          animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
         }
 
         .animate-gradient {

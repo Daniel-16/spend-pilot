@@ -1,5 +1,6 @@
 "use client";
 import { ArrowRight, TrendingUp, Menu, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export function Navigation() {
@@ -8,14 +9,14 @@ export function Navigation() {
   return (
     <nav className="relative z-50 px-6 py-4 backdrop-blur-sm bg-white/5 border-b border-white/10">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="bg-gradient-to-r from-blue-400 to-indigo-400 p-2 rounded-xl shadow-lg">
-            <TrendingUp className="h-6 w-6 text-white" />
+        <TrendingUp className="h-6 w-6 text-white" />
           </div>
           <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-            SpendPilot
+        SpendPilot
           </span>
-        </div>
+        </Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-8">
@@ -43,7 +44,6 @@ export function Navigation() {
           </button>
         </div>
 
-        {/* Mobile Menu Button */}
         <button
           className="md:hidden"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -56,7 +56,6 @@ export function Navigation() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-b border-white/10 p-6">
           <div className="flex flex-col gap-4">

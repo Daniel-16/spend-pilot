@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ArrowRight,
   Sparkles,
@@ -5,6 +7,7 @@ import {
   TrendingUp,
   DollarSign,
 } from "lucide-react";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 export function HeroSection() {
@@ -43,15 +46,16 @@ export function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp delay-600">
-            <button className="group bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-              <span className="flex items-center justify-center">
-                Analyze My Spending
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </button>
-            <button className="border-2 border-gray-600 text-gray-300 hover:bg-white/10 hover:border-white/30 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105">
+            <Link
+              href="/upload-statement"
+              className="group bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl flex items-center justify-center"
+            >
+              Analyze My Spending
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            {/* <button className="border-2 border-gray-600 text-gray-300 hover:bg-white/10 hover:border-white/30 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:scale-105">
               Watch Demo
-            </button>
+            </button> */}
           </div>
         </div>
 
