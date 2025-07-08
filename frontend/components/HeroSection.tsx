@@ -39,11 +39,9 @@ export function HeroSection() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed animate-fadeInUp delay-400">
-            Upload your bank statement and unlock AI-powered insights that
-            reveal hidden spending patterns, calculate your financial runway,
-            and provide personalized strategies to optimize your money.
-          </p>
+            <p className="text-md md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed animate-fadeInUp delay-400">
+            Upload your bank statement to get instant AI insights, spot spending trends, and discover ways to save more.
+            </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp delay-600">
             <Link

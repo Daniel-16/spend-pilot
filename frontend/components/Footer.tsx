@@ -1,6 +1,9 @@
 import { TrendingUp } from "lucide-react";
 
 export function Footer() {
+  const date = new Date();
+  const year = date.getFullYear();
+
   return (
     <footer className="border-t border-white/10 px-6 py-12 bg-black/20">
       <div className="max-w-7xl mx-auto">
@@ -25,10 +28,10 @@ export function Footer() {
             </a>
           </div>
         </div>
-        <div className="border-t border-white/10 mt-8 pt-8 text-center text-gray-400">
+        <div className="border-t text-sm border-white/10 mt-8 pt-8 text-center text-gray-400">
           <p>
-            &copy; 2025 SpendPilot. All rights reserved. Built with AI-powered
-            financial intelligence.
+            &copy; {year} SpendPilot. Powered by AI Agents and data analysis
+            technologies.
           </p>
         </div>
       </div>

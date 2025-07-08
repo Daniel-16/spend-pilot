@@ -70,7 +70,7 @@ export function FeaturesSection() {
                 Smart Money Management
               </span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto animate-fadeInUp delay-200">
+            <p className="text-md text-gray-300 max-w-3xl mx-auto animate-fadeInUp delay-200">
               Our AI analyzes your spending patterns and provides actionable
               insights to help you make better financial decisions.
             </p>

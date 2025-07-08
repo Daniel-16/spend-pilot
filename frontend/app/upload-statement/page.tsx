@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 interface Transaction {
   date: string;
@@ -239,73 +240,59 @@ export default function SpendPilot() {
         </div>
         <Navigation />
         <div className="min-h-screen p-4">
-          <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-12 pt-8">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="bg-blue-600 p-3 rounded-full">
-                  <TrendingUp className="h-8 w-8 text-white" />
-                </div>
-                <h1 className="text-4xl font-bold text-white">SpendPilot</h1>
-              </div>
-              <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-                Upload your bank statement and get AI-powered insights into your
-                spending habits and financial runway
-              </p>
-            </div>
-
-            {/* Upload Area */}
+          <div className="max-w-4xl mx-auto mt-5">
+            
             <Card className="max-w-2xl mx-auto bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
-              <CardContent className="p-8">
-                <div
-                  className={`border-2 border-dashed rounded-lg p-12 text-center transition-all duration-200 ${
-                    isDragOver
-                      ? "border-blue-500 bg-blue-400/10"
-                      : "border-white/20 hover:border-blue-400 bg-white/5"
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <Upload className="h-16 w-16 text-blue-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Upload Your Bank Statement
-                  </h3>
-                  <p className="text-gray-200 mb-6">
-                    Drag and drop your PDF bank statement here, or click to
-                    browse
-                  </p>
-                  <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <FileText className="h-6 w-6 relative z-10" />
-                  <span className="relative z-10">Choose File</span>
-                </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileInput}
-                    className="hidden"
-                  />
-                  <div className="mt-6 flex items-center justify-center gap-6 text-sm text-white">
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4" />
-                    <span>Maximum 5MB</span>
-                  </div>
-                  <div className="w-px h-4 bg-gray-300"></div>
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    <span>PDF format only</span>
-                  </div>
-                </div>
-                </div>
-              </CardContent>
+                <CardContent className="p-4 sm:p-8">
+                    <div
+                        className={`border-2 border-dashed rounded-lg p-6 sm:p-12 text-center transition-all duration-200 ${
+                            isDragOver
+                                ? "border-blue-500 bg-blue-400/10"
+                                : "border-white/20 hover:border-blue-400 bg-white/5"
+                        }`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    >
+                        <Upload className="h-12 w-12 sm:h-16 sm:w-16 text-blue-400 mx-auto mb-4" />
+                        <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                            Upload Your Bank Statement
+                        </h3>
+                        <p className="text-gray-200 mb-6 text-sm sm:text-base">
+                            Drag and drop your PDF bank statement here, or click to browse
+                        </p>
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="group relative inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <FileText className="h-5 w-5 sm:h-6 sm:w-6 relative z-10" />
+                            <span className="relative z-10">Choose File</span>
+                        </button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleFileInput}
+                            className="hidden"
+                        />
+                        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-white">
+                            <div className="flex items-center gap-2">
+                                <Target className="h-4 w-4" />
+                                <span>Maximum 5MB</span>
+                            </div>
+                            <div className="hidden sm:block w-px h-4 bg-gray-300"></div>
+                            <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                <span>PDF format only</span>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
             </Card>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
