@@ -36,8 +36,8 @@ class FileProcessor:
         except Exception as e:
             raise ValueError(f"Error processing file: {str(e)}")
         
-    def process_pdf(self, content: bytes) -> pd.DataFrame:
-        # TODO: Implement PDF processing logic
+    # def process_pdf(self, content: bytes) -> pd.DataFrame:
+        
         
     def get_file_info(self, file: UploadFile, content_size: int) -> Dict[str, Any]:
         return {
