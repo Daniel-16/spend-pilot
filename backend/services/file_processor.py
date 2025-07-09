@@ -3,13 +3,13 @@ import io
 import pdfplumber
 from fastapi import UploadFile
 from core.config import settings
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 class FileProcessor:
     def __init__(self):
         self.supported_extensions = settings.SUPPORTED_EXTENSIONS
         self.max_file_size = settings.MAX_FILE_SIZE
-        
+
     async def process_file(self, file: UploadFile) -> pd.DataFrame:
         file_extension = '.' + file.filename.split('.')[-1].lower()
         if file_extension not in self.supported_extensions:
@@ -36,21 +36,45 @@ class FileProcessor:
             return df
         except Exception as e:
             raise ValueError(f"Error processing file: {str(e)}")
-        
+
+    def _sanitize_columns(self, columns: List[str]) -> List[str]:
+        """
+        Sanitizes a list of column names to ensure they are unique.
+        - Replaces None or empty strings with 'Unnamed'.
+        - Appends a suffix (_2, _3, etc.) to duplicate column names.
+        """
+        new_cols = []
+        counts = {}
+        for col in columns:
+            if col is None or str(col).strip() == '':
+                col = 'Unnamed'
+            else:
+                col = str(col)
+
+            if col in counts:
+                counts[col] += 1
+                new_cols.append(f"{col}_{counts[col]}")
+            else:
+                counts[col] = 1
+                new_cols.append(col)
+        return new_cols
+
     def process_pdf(self, content: bytes) -> pd.DataFrame:
         """
         Extract tables from a PDF bank statement and return as a DataFrame.
-        This implementation uses pdfplumber to extract the first table found in the PDF.
         """
         with pdfplumber.open(io.BytesIO(content)) as pdf:
             all_tables = []
             for page in pdf.pages:
                 tables = page.extract_tables()
                 for table in tables:
-                    if table:
-                        all_tables.append(pd.DataFrame(table[1:], columns=table[0]))
+                    if table and len(table) > 1:
+                        header = self._sanitize_columns(table[0])
+                        df_table = pd.DataFrame(table[1:], columns=header)
+                        all_tables.append(df_table)
+
             if not all_tables:
-                raise ValueError("No tables found in PDF file. Please upload a statement with tabular data.")
+                raise ValueError("No tables found in PDF file. Please upload a statement with tabular data.")            
             df = pd.concat(all_tables, ignore_index=True)
             return df
         
