@@ -3,6 +3,7 @@ from services.file_processor import FileProcessor
 from services.statement_analyzer import StatementAnalyzer
 from schemas.responses import UploadResponse
 from typing import Dict, Any
+from core.config import settings
 
 router = APIRouter()
 
@@ -13,18 +14,15 @@ async def upload_bank_statement(file: UploadFile = File(...)):
     Supports CSV, Excel formats, and PDF.
     """
     try:
-        if file.size > settings.MAX_FILE_SIZE:
-            raise HTTPException(
-                status_code=400,
-                detail=f"File size exceeds the maximum allowed ({settings.MAX_FILE_SIZE} bytes)"
-            )
-            
-        if file.filename.split(".")[-1].lower() not in settings.SUPPORTED_EXTENSIONS:
+        file_extension = "." + file.filename.split(".")[-1].lower()
+        if file_extension not in settings.SUPPORTED_EXTENSIONS:
             raise HTTPException(
                 status_code=400,
                 detail=f"Unsupported file format. Supported formats: {', '.join(settings.SUPPORTED_EXTENSIONS)}"
             )
-            
+        
+        processor = FileProcessor()
+        df = await processor.process_file(file)
         analyzer = StatementAnalyzer()
         analysis_result = analyzer.analyze_statement(df, file.filename)
         
@@ -42,7 +40,6 @@ async def upload_bank_statement(file: UploadFile = File(...)):
 @router.get("/supported-formats")
 async def get_supported_formats():
     """Get list of supported file formats"""
-    from core.config import settings
     return {
         "supported_extensions": settings.SUPPORTED_EXTENSIONS,
         "max_file_size_mb": settings.MAX_FILE_SIZE // (1024 * 1024),

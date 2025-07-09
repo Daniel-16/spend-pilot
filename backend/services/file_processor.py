@@ -1,5 +1,6 @@
 import pandas as pd
 import io
+import pdfplumber
 from fastapi import UploadFile
 from core.config import settings
 from typing import Dict, Any
@@ -36,8 +37,22 @@ class FileProcessor:
         except Exception as e:
             raise ValueError(f"Error processing file: {str(e)}")
         
-    # def process_pdf(self, content: bytes) -> pd.DataFrame:
-        
+    def process_pdf(self, content: bytes) -> pd.DataFrame:
+        """
+        Extract tables from a PDF bank statement and return as a DataFrame.
+        This implementation uses pdfplumber to extract the first table found in the PDF.
+        """
+        with pdfplumber.open(io.BytesIO(content)) as pdf:
+            all_tables = []
+            for page in pdf.pages:
+                tables = page.extract_tables()
+                for table in tables:
+                    if table:
+                        all_tables.append(pd.DataFrame(table[1:], columns=table[0]))
+            if not all_tables:
+                raise ValueError("No tables found in PDF file. Please upload a statement with tabular data.")
+            df = pd.concat(all_tables, ignore_index=True)
+            return df
         
     def get_file_info(self, file: UploadFile, content_size: int) -> Dict[str, Any]:
         return {
