@@ -72,16 +72,18 @@ class StatementAnalyzer:
         
         if column_mapping.get('amount'):
             amount_col = column_mapping['amount']
-            if pd.api.types.is_numeric_dtype(df[amount_col]):
+            if amount_col is not None and pd.api.types.is_numeric_dtype(df[amount_col]):
                 insights.update(self._get_amount_insights(df, amount_col))
         
         if column_mapping.get('date'):
             date_col = column_mapping['date']
-            insights.update(self._get_date_insights(df, date_col))
+            if date_col is not None:
+                insights.update(self._get_date_insights(df, date_col))
         
         if column_mapping.get('description'):
             desc_col = column_mapping['description']
-            insights.update(self._get_description_insights(df, desc_col))
+            if desc_col is not None:
+                insights.update(self._get_description_insights(df, desc_col))
         
         return insights
     

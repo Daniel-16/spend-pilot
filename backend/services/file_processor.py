@@ -3,14 +3,16 @@ import io
 import pdfplumber
 from fastapi import UploadFile
 from core.config import settings
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 class FileProcessor:
     def __init__(self):
         self.supported_extensions = settings.SUPPORTED_EXTENSIONS
         self.max_file_size = settings.MAX_FILE_SIZE
-
     async def process_file(self, file: UploadFile) -> pd.DataFrame:
+        if not file or not file.filename:
+            raise ValueError("No file provided or filename is missing")
+            
         file_extension = '.' + file.filename.split('.')[-1].lower()
         if file_extension not in self.supported_extensions:
             raise ValueError(f"Unsupported file extension: {file_extension}. Supported extensions: {', '.join(self.supported_extensions)}")
@@ -37,7 +39,7 @@ class FileProcessor:
         except Exception as e:
             raise ValueError(f"Error processing file: {str(e)}")
 
-    def _sanitize_columns(self, columns: List[str]) -> List[str]:
+    def _sanitize_columns(self, columns: List[Optional[str]]) -> List[str]:
         """
         Sanitizes a list of column names to ensure they are unique.
         - Replaces None or empty strings with 'Unnamed'.
@@ -70,7 +72,7 @@ class FileProcessor:
                 for table in tables:
                     if table and len(table) > 1:
                         header = self._sanitize_columns(table[0])
-                        df_table = pd.DataFrame(table[1:], columns=header)
+                        df_table = pd.DataFrame(table[1:], columns=pd.Index(header))
                         all_tables.append(df_table)
 
             if not all_tables:
