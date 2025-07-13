@@ -1,5 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
-from services.gemini_client import analyze_pdf_with_gemini
+from services.llm_client import analyze_pdf_with_gemini
 from schemas.response import AnalyzeResponse, ErrorResponse
 from core.config import settings
 
