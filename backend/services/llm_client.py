@@ -22,12 +22,16 @@ async def process_chunk(model, chunk: bytes, chunk_num: int, total_chunks: int) 
     try:
         response = await asyncio.to_thread(
             model.generate_content,
-            [
-                {"text": chunk_prompt},
-                {"inlineData": {
-                    "mimeType": "application/pdf",
-                    "data": encoded_chunk
-                }}
+            contents=[
+                {
+                    "text": chunk_prompt
+                },
+                {
+                    "inline_data": {
+                        "mime_type": "application/pdf",
+                        "data": encoded_chunk
+                    }
+                }
             ]
         )
         
@@ -47,7 +51,7 @@ async def analyze_pdf_with_gemini(file_bytes: bytes, file_mime: str) -> dict:
         raise ValueError(f"Invalid file type. Expected application/pdf, got {file_mime}")
 
     try:
-        model = genai.GenerativeModel('gemini-pro-vision')
+        model = genai.GenerativeModel('gemini-2.5-pro')
         
         chunks = chunk_pdf(file_bytes)
         total_chunks = len(chunks)
@@ -93,12 +97,16 @@ async def analyze_pdf_with_gemini(file_bytes: bytes, file_mime: str) -> dict:
         else:
             response = await asyncio.to_thread(
                 model.generate_content,
-                [
-                    {"text": SYSTEM_PROMPT},
-                    {"inlineData": {
-                        "mimeType": file_mime,
-                        "data": base64.b64encode(file_bytes).decode('utf-8')
-                    }}
+                contents=[
+                    {
+                        "text": SYSTEM_PROMPT
+                    },
+                    {
+                        "inline_data": {
+                            "mime_type": file_mime,
+                            "data": base64.b64encode(file_bytes).decode('utf-8')
+                        }
+                    }
                 ]
             )
             
