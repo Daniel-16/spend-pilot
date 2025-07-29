@@ -7,6 +7,9 @@ import logging
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+ALLOWED_EXTENSIONS = {'.pdf'}
+ALLOWED_MIME_TYPES = {'application/pdf', 'application/x-pdf'}
+
 @router.post(
     "/analyze-statement", 
     response_model=AnalyzeResponse, 
@@ -23,11 +26,17 @@ async def analyze_statement(file: UploadFile = File(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file provided")
     
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    file_extension = '.' + file.filename.lower().split('.')[-1] if '.' in file.filename else ''
+    if file_extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Only PDF files are supported. Got: {file_extension}"
+        )
     
-    if not file.content_type or file.content_type.lower() != "application/pdf":
-        raise HTTPException(status_code=400, detail="Invalid content type. Expected application/pdf")
+    content_type = file.content_type or "application/pdf"
+    if content_type.lower() not in ALLOWED_MIME_TYPES:
+        logger.warning(f"Unexpected content type: {content_type}, but proceeding with PDF processing")
+        content_type = "application/pdf"
     
     try:
         content = await file.read()
@@ -35,51 +44,74 @@ async def analyze_statement(file: UploadFile = File(...)):
         logger.error(f"Failed to read file {file.filename}: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Failed to read file: {str(e)}")
     
+    max_size_mb = settings.MAX_FILE_SIZE / (1024 * 1024)
     if len(content) > settings.MAX_FILE_SIZE:
         raise HTTPException(
             status_code=400, 
-            detail=f"File size exceeds {settings.MAX_FILE_SIZE / (1024*1024):.1f}MB limit"
+            detail=f"File size exceeds {max_size_mb:.1f}MB limit"
         )
     
     if len(content) == 0:
         raise HTTPException(status_code=400, detail="File is empty")
     
+    if not content.startswith(b'%PDF'):
+        raise HTTPException(
+            status_code=400, 
+            detail="Invalid PDF file - missing PDF header"
+        )
+    
     try:
-        result = await analyze_pdf_with_gemini(content, file.content_type)
+        logger.info(f"Starting analysis for file: {file.filename} ({len(content)} bytes)")
+        
+        result = await analyze_pdf_with_gemini(content, content_type)
         
         if isinstance(result, dict) and "error" in result:
-            raise HTTPException(status_code=400, detail=result["error"])
+            error_msg = result["error"]
+            if "not a bank statement" in error_msg.lower():
+                raise HTTPException(status_code=400, detail="The uploaded file does not appear to be a bank statement")
+            else:
+                raise HTTPException(status_code=400, detail=error_msg)
         
         if not isinstance(result, dict):
+            logger.error(f"Invalid response type: {type(result)}")
             raise HTTPException(status_code=500, detail="Invalid response format from analysis service")
             
         required_fields = ["transactions", "spending_by_category", "monthly_summary", "runway_estimate"]
         missing_fields = [field for field in required_fields if field not in result]
         if missing_fields:
             logger.error(f"Missing fields in response: {missing_fields}")
-            raise HTTPException(status_code=500, detail="Incomplete analysis result")
+            logger.error(f"Actual response keys: {list(result.keys())}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Incomplete analysis result. Missing: {', '.join(missing_fields)}"
+            )
         
+        logger.info(f"Analysis completed successfully for {file.filename}")
         return result
         
     except HTTPException:
         raise
     except ValueError as e:
-        logger.error(f"Validation error: {str(e)}")
+        logger.error(f"Validation error for {file.filename}: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except RuntimeError as e:
         error_str = str(e).lower()
+        logger.error(f"Runtime error for {file.filename}: {str(e)}")
+        
         if "api key" in error_str:
-            logger.error("API key configuration error")
             raise HTTPException(status_code=500, detail="Server configuration error")
         elif "rate limit" in error_str or "quota" in error_str:
-            logger.warning("Rate limit exceeded")
-            raise HTTPException(status_code=429, detail="Service temporarily unavailable. Please try again later.")
+            raise HTTPException(
+                status_code=429, 
+                detail="Service temporarily unavailable due to rate limits. Please try again later."
+            )
         elif "timed out" in error_str or "timeout" in error_str:
-            logger.warning("Request timeout")
-            raise HTTPException(status_code=504, detail="Analysis request timed out. Please try again.")
+            raise HTTPException(
+                status_code=504, 
+                detail="Analysis request timed out. Please try again with a smaller file."
+            )
         else:
-            logger.error(f"Runtime error: {str(e)}")
             raise HTTPException(status_code=500, detail="Analysis service error")
     except Exception as e:
-        logger.error(f"Unexpected error analyzing {file.filename}: {str(e)}")
-        raise HTTPException(status_code=500, detail="Unexpected server error")
+        logger.error(f"Unexpected error analyzing {file.filename}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Unexpected server error during analysis")
