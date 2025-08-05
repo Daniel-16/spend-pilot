@@ -70,11 +70,21 @@ interface AnalysisResult {
   runway_estimate: number;
 }
 
-// Chart color palette
-const COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
+const COLORS = [
+  "#3B82F6",
+  "#EF4444",
+  "#10B981",
+  "#F59E0B",
+  "#8B5CF6",
+  "#EC4899",
+  "#06B6D4",
+  "#84CC16",
+];
 
 export default function Dashboard() {
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null
+  );
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Transaction;
     direction: "asc" | "desc";
@@ -137,63 +147,68 @@ export default function Dashboard() {
     router.push("/upload-statement");
   };
 
-  // Calculate stats from data
   const calculateStats = () => {
-    if (!analysisResult) return { avgDailySpend: 0, totalDebit: 0, totalCredit: 0 };
-    
-    const debits = analysisResult.transactions.filter(t => t.amount < 0);
-    const credits = analysisResult.transactions.filter(t => t.amount > 0);
-    
+    if (!analysisResult)
+      return { avgDailySpend: 0, totalDebit: 0, totalCredit: 0 };
+
+    const debits = analysisResult.transactions.filter((t) => t.amount < 0);
+    const credits = analysisResult.transactions.filter((t) => t.amount > 0);
+
     const totalDebit = Math.abs(debits.reduce((sum, t) => sum + t.amount, 0));
     const totalCredit = credits.reduce((sum, t) => sum + t.amount, 0);
-    
-    // Calculate average daily spend from debits only
-    const dateRange = new Set(analysisResult.transactions.map(t => t.date.split('T')[0]));
+
+    const dateRange = new Set(
+      analysisResult.transactions.map((t) => t.date.split("T")[0])
+    );
     const avgDailySpend = totalDebit / dateRange.size;
-    
+
     return { avgDailySpend, totalDebit, totalCredit };
   };
 
-  // Prepare chart data
   const prepareChartData = () => {
-    if (!analysisResult) return { dailySpending: [], categoryData: [], monthlyData: [] };
+    if (!analysisResult)
+      return { dailySpending: [], categoryData: [], monthlyData: [] };
 
-    // Daily spending trend
     const dailySpending = analysisResult.transactions
-      .filter(t => t.amount < 0)
+      .filter((t) => t.amount < 0)
       .reduce((acc, transaction) => {
-        const date = transaction.date.split('T')[0];
-        const existing = acc.find(item => item.date === date);
+        const date = transaction.date.split("T")[0];
+        const existing = acc.find((item) => item.date === date);
         if (existing) {
           existing.amount += Math.abs(transaction.amount);
         } else {
           acc.push({
             date: formatDate(date),
             amount: Math.abs(transaction.amount),
-            balance: transaction.balance
+            balance: transaction.balance,
           });
         }
         return acc;
       }, [] as { date: string; amount: number; balance: number }[])
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    // Category spending data
     const categoryData = Object.entries(analysisResult.spending_by_category)
-      .filter(([category, amount]) => category !== 'Income' && amount > 0)
+      .filter(([category, amount]) => category !== "Income" && amount > 0)
       .map(([category, amount]) => ({
         name: category,
         value: amount,
-        percentage: ((amount / Object.values(analysisResult.spending_by_category).reduce((a, b) => a + b, 0)) * 100).toFixed(1)
+        percentage: (
+          (amount /
+            Object.values(analysisResult.spending_by_category).reduce(
+              (a, b) => a + b,
+              0
+            )) *
+          100
+        ).toFixed(1),
       }))
       .sort((a, b) => b.value - a.value);
 
-    // Monthly data
-    const monthlyData = analysisResult.monthly_summary.map(month => ({
+    const monthlyData = analysisResult.monthly_summary.map((month) => ({
       month: month.month,
       inflow: month.inflow,
       outflow: Math.abs(month.outflow),
       net: month.inflow - Math.abs(month.outflow),
-      balance: month.closing_balance
+      balance: month.closing_balance,
     }));
 
     return { dailySpending, categoryData, monthlyData };
@@ -202,19 +217,28 @@ export default function Dashboard() {
   const stats = calculateStats();
   const chartData = prepareChartData();
 
-  // Generate AI-like summary
   const generateSummary = () => {
     if (!analysisResult) return "";
-    
+
     const topCategory = Object.entries(analysisResult.spending_by_category)
-      .filter(([cat, amount]) => cat !== 'Income' && amount > 0)
-      .sort(([,a], [,b]) => b - a)[0];
-    
+      .filter(([cat, amount]) => cat !== "Income" && amount > 0)
+      .sort(([, a], [, b]) => b - a)[0];
+
     const totalSpent = stats.totalDebit;
     const totalEarned = stats.totalCredit;
     const netFlow = totalEarned - totalSpent;
-    
-    return `Based on your transaction history, you spent ${formatCurrency(totalSpent)} across various categories. Your highest spending category was ${topCategory?.[0] || 'Other'} at ${formatCurrency(topCategory?.[1] || 0)}. ${netFlow > 0 ? `You had a positive cash flow of ${formatCurrency(netFlow)}.` : `You had a negative cash flow of ${formatCurrency(Math.abs(netFlow))}.`} Your average daily spending is ${formatCurrency(stats.avgDailySpend)}.`;
+
+    return `Based on your transaction history, you spent ${formatCurrency(
+      totalSpent
+    )} across various categories. Your highest spending category was ${
+      topCategory?.[0] || "Other"
+    } at ${formatCurrency(topCategory?.[1] || 0)}. ${
+      netFlow > 0
+        ? `You had a positive cash flow of ${formatCurrency(netFlow)}.`
+        : `You had a negative cash flow of ${formatCurrency(
+            Math.abs(netFlow)
+          )}.`
+    } Your average daily spending is ${formatCurrency(stats.avgDailySpend)}.`;
   };
 
   if (!analysisResult) return null;
@@ -222,7 +246,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-8 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-full shadow-lg">
@@ -232,25 +255,31 @@ export default function Dashboard() {
               SpendPilot Analysis
             </h1>
           </div>
-          <Button onClick={resetApp} variant="outline" className="w-full sm:w-auto shadow-sm hover:shadow-md transition-shadow">
+          <Button
+            onClick={resetApp}
+            variant="outline"
+            className="w-full sm:w-auto shadow-sm hover:shadow-md transition-shadow"
+          >
             Upload New Statement
           </Button>
         </div>
 
-        {/* Warning Banner */}
-        {analysisResult.runway_estimate > 0 && analysisResult.runway_estimate < 7 && (
-          <Alert className="border-red-200 bg-red-50/90 backdrop-blur-sm shadow-lg animate-pulse">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
-            <AlertDescription className="text-red-800 text-sm sm:text-base">
-              <strong>Low Runway Alert:</strong> Based on your current
-              spending pattern, you have approximately{" "}
-              <span className="font-bold">{analysisResult.runway_estimate.toFixed(1)} days</span> of runway
-              remaining. Consider reducing expenses or increasing income.
-            </AlertDescription>
-          </Alert>
-        )}
+        {analysisResult.runway_estimate > 0 &&
+          analysisResult.runway_estimate < 7 && (
+            <Alert className="border-red-200 bg-red-50/90 backdrop-blur-sm shadow-lg animate-pulse">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <AlertDescription className="text-red-800 text-sm sm:text-base">
+                <strong>Low Runway Alert:</strong> Based on your current
+                spending pattern, you have approximately{" "}
+                <span className="font-bold">
+                  {analysisResult.runway_estimate.toFixed(1)} days
+                </span>{" "}
+                of runway remaining. Consider reducing expenses or increasing
+                income.
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {/* Key Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg hover:shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -320,16 +349,15 @@ export default function Dashboard() {
                     : "text-green-600"
                 }`}
               >
-                {analysisResult.runway_estimate > 0 ? `${analysisResult.runway_estimate.toFixed(1)} days` : "N/A"}
+                {analysisResult.runway_estimate > 0
+                  ? `${analysisResult.runway_estimate.toFixed(1)} days`
+                  : "N/A"}
               </div>
-              <p className="text-xs text-gray-500">
-                At current spending rate
-              </p>
+              <p className="text-xs text-gray-500">At current spending rate</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* AI Summary */}
         <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -344,9 +372,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Daily Spending Trend */}
           <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -359,39 +385,58 @@ export default function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData.dailySpending}>
                     <defs>
-                      <linearGradient id="colorSpending" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      <linearGradient
+                        id="colorSpending"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#3B82F6"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#3B82F6"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis 
-                      dataKey="date" 
+                    <XAxis
+                      dataKey="date"
                       stroke="#6B7280"
                       fontSize={12}
                       tick={{ fontSize: 10 }}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="#6B7280"
                       fontSize={12}
-                      tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
+                      tickFormatter={(value) =>
+                        `₦${(value / 1000).toFixed(0)}k`
+                      }
                     />
-                    <Tooltip 
-                      formatter={(value) => [formatCurrency(value as number), "Spending"]}
-                      labelStyle={{ color: '#374151' }}
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                        border: '1px solid #E5E7EB',
-                        borderRadius: '8px'
+                    <Tooltip
+                      formatter={(value) => [
+                        formatCurrency(value as number),
+                        "Spending",
+                      ]}
+                      labelStyle={{ color: "#374151" }}
+                      contentStyle={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        border: "1px solid #E5E7EB",
+                        borderRadius: "8px",
                       }}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="amount" 
-                      stroke="#3B82F6" 
+                    <Area
+                      type="monotone"
+                      dataKey="amount"
+                      stroke="#3B82F6"
                       strokeWidth={2}
-                      fillOpacity={1} 
-                      fill="url(#colorSpending)" 
+                      fillOpacity={1}
+                      fill="url(#colorSpending)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -399,7 +444,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Category Breakdown */}
           <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -418,21 +462,26 @@ export default function Dashboard() {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percentage }) => `${name}: ${percentage}%`}
+                      label={({ name, percentage }) =>
+                        `${name}: ${percentage}%`
+                      }
                       labelLine={false}
                     >
                       {chartData.categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                    <Tooltip
+                      formatter={(value) => formatCurrency(value as number)}
+                    />
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-
-          {/* Monthly Summary */}
           {chartData.monthlyData.length > 1 && (
             <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg lg:col-span-2">
               <CardHeader>
@@ -446,25 +495,27 @@ export default function Dashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData.monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis 
-                        dataKey="month" 
+                      <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
+                      <YAxis
                         stroke="#6B7280"
                         fontSize={12}
+                        tickFormatter={(value) =>
+                          `₦${(value / 1000).toFixed(0)}k`
+                        }
                       />
-                      <YAxis 
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
-                      />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value, name) => [
-                          formatCurrency(value as number), 
-                          name === 'inflow' ? 'Income' : name === 'outflow' ? 'Spending' : 'Net Flow'
+                          formatCurrency(value as number),
+                          name === "inflow"
+                            ? "Income"
+                            : name === "outflow"
+                            ? "Spending"
+                            : "Net Flow",
                         ]}
-                        contentStyle={{ 
-                          backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                          border: '1px solid #E5E7EB',
-                          borderRadius: '8px'
+                        contentStyle={{
+                          backgroundColor: "rgba(255, 255, 255, 0.95)",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "8px",
                         }}
                       />
                       <Legend />
@@ -478,8 +529,6 @@ export default function Dashboard() {
             </Card>
           )}
         </div>
-
-        {/* Category Spending Details */}
         {chartData.categoryData.length > 0 && (
           <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
             <CardHeader>
@@ -491,13 +540,20 @@ export default function Dashboard() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {chartData.categoryData.map((category, index) => (
-                  <div key={category.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={category.name}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
-                      <div 
-                        className="w-4 h-4 rounded-full" 
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{
+                          backgroundColor: COLORS[index % COLORS.length],
+                        }}
                       />
-                      <span className="text-sm font-medium text-gray-700">{category.name}</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {category.name}
+                      </span>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold text-gray-900">
@@ -514,7 +570,6 @@ export default function Dashboard() {
           </Card>
         )}
 
-        {/* Transactions Table */}
         <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -576,7 +631,7 @@ export default function Dashboard() {
                 </TableHeader>
                 <TableBody>
                   {sortedTransactions.slice(0, 50).map((transaction, index) => (
-                    <TableRow 
+                    <TableRow
                       key={index}
                       className="hover:bg-gray-50/50 transition-colors"
                     >
@@ -602,9 +657,7 @@ export default function Dashboard() {
                       <TableCell>
                         <Badge
                           variant={
-                            transaction.amount < 0
-                              ? "destructive"
-                              : "default"
+                            transaction.amount < 0 ? "destructive" : "default"
                           }
                           className="whitespace-nowrap"
                         >
