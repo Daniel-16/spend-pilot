@@ -10,6 +10,7 @@ from core.config import settings
 from core.system_prompt import SYSTEM_PROMPT
 import json
 import logging
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -73,32 +74,36 @@ async def _analyze_with_text_extraction(chain, file_content: bytes) -> Dict[str,
     """Fallback: Extract text from PDF and analyze."""
     try:
         pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
-        text_content = ""
         
-        for page_num, page in enumerate(pdf_reader.pages):
+        async def extract_page_text(page_num, page):
             try:
                 page_text = page.extract_text()
                 if page_text.strip():
-                    text_content += f"\n--- Page {page_num + 1} ---\n{page_text}\n"
+                    return f"\n--- Page {page_num + 1} ---\n{page_text}\n"
             except Exception as e:
                 logger.warning(f"Failed to extract text from page {page_num + 1}: {e}")
-                continue
-        
+            return ""
+
+        tasks = [extract_page_text(page_num, page) for page_num, page in enumerate(pdf_reader.pages)]
+        text_content = "".join(await asyncio.gather(*tasks))
+
         if not text_content.strip():
             raise ValueError("Could not extract any readable text from PDF")
-        
+
+        truncated_text = text_content[:8000]
+
         full_prompt = f"""
         {SYSTEM_PROMPT}
-        
+
         Here is the extracted text from the bank statement PDF:
-        
-        {text_content[:8000]}  # Limit text to avoid token limits
+
+        {truncated_text}
         """
-        
+
         message = HumanMessage(content=full_prompt)
         result = await chain.ainvoke([message])
         return result
-        
+
     except Exception as e:
         raise RuntimeError(f"Text extraction analysis failed: {str(e)}")
 
