@@ -1,7 +1,6 @@
 import base64
 import os
 from typing import Dict, Any
-import PyPDF2
 import io
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
@@ -11,6 +10,7 @@ from core.system_prompt import SYSTEM_PROMPT
 import json
 import logging
 import asyncio
+import fitz
 
 logger = logging.getLogger(__name__)
 
@@ -73,24 +73,27 @@ async def _analyze_with_vision(chain, file_content: bytes, content_type: str) ->
 async def _analyze_with_text_extraction(chain, file_content: bytes) -> Dict[str, Any]:
     """Fallback: Extract text from PDF and analyze."""
     try:
-        pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
-        
+        pdf_document = fitz.open(stream=file_content, filetype="pdf")
+
         async def extract_page_text(page_num, page):
             try:
-                page_text = page.extract_text()
+                page_text = page.get_text()
                 if page_text.strip():
                     return f"\n--- Page {page_num + 1} ---\n{page_text}\n"
             except Exception as e:
                 logger.warning(f"Failed to extract text from page {page_num + 1}: {e}")
             return ""
 
-        tasks = [extract_page_text(page_num, page) for page_num, page in enumerate(pdf_reader.pages)]
+        tasks = [
+            extract_page_text(page_num, pdf_document.load_page(page_num))
+            for page_num in range(pdf_document.page_count)
+        ]
         text_content = "".join(await asyncio.gather(*tasks))
 
         if not text_content.strip():
             raise ValueError("Could not extract any readable text from PDF")
 
-        truncated_text = text_content[:8000]
+        truncated_text = text_content[:8000]  # Limit text to avoid token limits
 
         full_prompt = f"""
         {SYSTEM_PROMPT}
