@@ -11,6 +11,8 @@ import {
   ArrowUpDown,
   FileText,
   Sparkles,
+  PieChart,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,23 +26,52 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  Legend,
+} from "recharts";
 
 interface Transaction {
   date: string;
-  desc: string;
+  description: string;
   amount: number;
-  type: "debit" | "credit";
+  balance: number;
+  category: string;
+}
+
+interface SpendingByCategory {
+  [key: string]: number;
+}
+
+interface MonthlySummary {
+  month: string;
+  inflow: number;
+  outflow: number;
+  closing_balance: number;
 }
 
 interface AnalysisResult {
-  summary: string;
-  stats: {
-    avg_daily_spend: number;
-    total_debit: number;
-    runway_days: number;
-  };
   transactions: Transaction[];
+  spending_by_category: SpendingByCategory;
+  monthly_summary: MonthlySummary[];
+  runway_estimate: number;
 }
+
+// Chart color palette
+const COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
 
 export default function Dashboard() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -60,12 +91,12 @@ export default function Dashboard() {
   }, [router]);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount / 100);
+    }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
@@ -106,6 +137,86 @@ export default function Dashboard() {
     router.push("/upload-statement");
   };
 
+  // Calculate stats from data
+  const calculateStats = () => {
+    if (!analysisResult) return { avgDailySpend: 0, totalDebit: 0, totalCredit: 0 };
+    
+    const debits = analysisResult.transactions.filter(t => t.amount < 0);
+    const credits = analysisResult.transactions.filter(t => t.amount > 0);
+    
+    const totalDebit = Math.abs(debits.reduce((sum, t) => sum + t.amount, 0));
+    const totalCredit = credits.reduce((sum, t) => sum + t.amount, 0);
+    
+    // Calculate average daily spend from debits only
+    const dateRange = new Set(analysisResult.transactions.map(t => t.date.split('T')[0]));
+    const avgDailySpend = totalDebit / dateRange.size;
+    
+    return { avgDailySpend, totalDebit, totalCredit };
+  };
+
+  // Prepare chart data
+  const prepareChartData = () => {
+    if (!analysisResult) return { dailySpending: [], categoryData: [], monthlyData: [] };
+
+    // Daily spending trend
+    const dailySpending = analysisResult.transactions
+      .filter(t => t.amount < 0)
+      .reduce((acc, transaction) => {
+        const date = transaction.date.split('T')[0];
+        const existing = acc.find(item => item.date === date);
+        if (existing) {
+          existing.amount += Math.abs(transaction.amount);
+        } else {
+          acc.push({
+            date: formatDate(date),
+            amount: Math.abs(transaction.amount),
+            balance: transaction.balance
+          });
+        }
+        return acc;
+      }, [] as { date: string; amount: number; balance: number }[])
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Category spending data
+    const categoryData = Object.entries(analysisResult.spending_by_category)
+      .filter(([category, amount]) => category !== 'Income' && amount > 0)
+      .map(([category, amount]) => ({
+        name: category,
+        value: amount,
+        percentage: ((amount / Object.values(analysisResult.spending_by_category).reduce((a, b) => a + b, 0)) * 100).toFixed(1)
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    // Monthly data
+    const monthlyData = analysisResult.monthly_summary.map(month => ({
+      month: month.month,
+      inflow: month.inflow,
+      outflow: Math.abs(month.outflow),
+      net: month.inflow - Math.abs(month.outflow),
+      balance: month.closing_balance
+    }));
+
+    return { dailySpending, categoryData, monthlyData };
+  };
+
+  const stats = calculateStats();
+  const chartData = prepareChartData();
+
+  // Generate AI-like summary
+  const generateSummary = () => {
+    if (!analysisResult) return "";
+    
+    const topCategory = Object.entries(analysisResult.spending_by_category)
+      .filter(([cat, amount]) => cat !== 'Income' && amount > 0)
+      .sort(([,a], [,b]) => b - a)[0];
+    
+    const totalSpent = stats.totalDebit;
+    const totalEarned = stats.totalCredit;
+    const netFlow = totalEarned - totalSpent;
+    
+    return `Based on your transaction history, you spent ${formatCurrency(totalSpent)} across various categories. Your highest spending category was ${topCategory?.[0] || 'Other'} at ${formatCurrency(topCategory?.[1] || 0)}. ${netFlow > 0 ? `You had a positive cash flow of ${formatCurrency(netFlow)}.` : `You had a negative cash flow of ${formatCurrency(Math.abs(netFlow))}.`} Your average daily spending is ${formatCurrency(stats.avgDailySpend)}.`;
+  };
+
   if (!analysisResult) return null;
 
   return (
@@ -127,20 +238,20 @@ export default function Dashboard() {
         </div>
 
         {/* Warning Banner */}
-        {analysisResult.stats.runway_days < 7 && (
+        {analysisResult.runway_estimate > 0 && analysisResult.runway_estimate < 7 && (
           <Alert className="border-red-200 bg-red-50/90 backdrop-blur-sm shadow-lg animate-pulse">
             <AlertTriangle className="h-5 w-5 text-red-600" />
             <AlertDescription className="text-red-800 text-sm sm:text-base">
               <strong>Low Runway Alert:</strong> Based on your current
               spending pattern, you have approximately{" "}
-              <span className="font-bold">{analysisResult.stats.runway_days.toFixed(1)} days</span> of runway
+              <span className="font-bold">{analysisResult.runway_estimate.toFixed(1)} days</span> of runway
               remaining. Consider reducing expenses or increasing income.
             </AlertDescription>
           </Alert>
         )}
 
         {/* Key Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg hover:shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -150,7 +261,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">
-                {formatCurrency(analysisResult.stats.avg_daily_spend)}
+                {formatCurrency(stats.avgDailySpend)}
               </div>
               <p className="text-xs text-gray-500">
                 Based on transaction history
@@ -161,16 +272,33 @@ export default function Dashboard() {
           <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg hover:shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Debits
+                Total Spending
               </CardTitle>
               <TrendingDown className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {formatCurrency(analysisResult.stats.total_debit)}
+                {formatCurrency(stats.totalDebit)}
               </div>
               <p className="text-xs text-gray-500">
                 Total outgoing transactions
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg hover:shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Income
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {formatCurrency(stats.totalCredit)}
+              </div>
+              <p className="text-xs text-gray-500">
+                Total incoming transactions
               </p>
             </CardContent>
           </Card>
@@ -185,12 +313,14 @@ export default function Dashboard() {
             <CardContent>
               <div
                 className={`text-2xl font-bold ${
-                  analysisResult.stats.runway_days < 7
+                  analysisResult.runway_estimate < 7
                     ? "text-red-600"
+                    : analysisResult.runway_estimate < 30
+                    ? "text-yellow-600"
                     : "text-green-600"
                 }`}
               >
-                {analysisResult.stats.runway_days.toFixed(1)} days
+                {analysisResult.runway_estimate > 0 ? `${analysisResult.runway_estimate.toFixed(1)} days` : "N/A"}
               </div>
               <p className="text-xs text-gray-500">
                 At current spending rate
@@ -204,22 +334,192 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-blue-500" />
-              AI Spending Analysis
+              Spending Analysis Summary
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-              {analysisResult.summary}
+              {generateSummary()}
             </p>
           </CardContent>
         </Card>
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Daily Spending Trend */}
+          <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-blue-500" />
+                Daily Spending Trend
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData.dailySpending}>
+                    <defs>
+                      <linearGradient id="colorSpending" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#6B7280"
+                      fontSize={12}
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis 
+                      stroke="#6B7280"
+                      fontSize={12}
+                      tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [formatCurrency(value as number), "Spending"]}
+                      labelStyle={{ color: '#374151' }}
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="amount" 
+                      stroke="#3B82F6" 
+                      strokeWidth={2}
+                      fillOpacity={1} 
+                      fill="url(#colorSpending)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Category Breakdown */}
+          <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PieChart className="h-5 w-5 text-blue-500" />
+                Spending by Category
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={chartData.categoryData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percentage }) => `${name}: ${percentage}%`}
+                      labelLine={false}
+                    >
+                      {chartData.categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Monthly Summary */}
+          {chartData.monthlyData.length > 1 && (
+            <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                  Monthly Income vs Spending
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis 
+                        dataKey="month" 
+                        stroke="#6B7280"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="#6B7280"
+                        fontSize={12}
+                        tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip 
+                        formatter={(value, name) => [
+                          formatCurrency(value as number), 
+                          name === 'inflow' ? 'Income' : name === 'outflow' ? 'Spending' : 'Net Flow'
+                        ]}
+                        contentStyle={{ 
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '8px'
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="inflow" fill="#10B981" name="Income" />
+                      <Bar dataKey="outflow" fill="#EF4444" name="Spending" />
+                      <Bar dataKey="net" fill="#3B82F6" name="Net Flow" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Category Spending Details */}
+        {chartData.categoryData.length > 0 && (
+          <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PieChart className="h-5 w-5 text-blue-500" />
+                Category Spending Breakdown
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {chartData.categoryData.map((category, index) => (
+                  <div key={category.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-4 h-4 rounded-full" 
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span className="text-sm font-medium text-gray-700">{category.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-gray-900">
+                        {formatCurrency(category.value)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {category.percentage}%
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Transactions Table */}
         <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-blue-500" />
-              Transaction History
+              Recent Transactions
             </CardTitle>
           </CardHeader>
           <CardContent className="overflow-auto">
@@ -238,7 +538,7 @@ export default function Dashboard() {
                     </TableHead>
                     <TableHead
                       className="cursor-pointer hover:text-blue-600 transition-colors"
-                      onClick={() => handleSort("desc")}
+                      onClick={() => handleSort("description")}
                     >
                       <div className="flex items-center gap-2">
                         Description
@@ -256,17 +556,26 @@ export default function Dashboard() {
                     </TableHead>
                     <TableHead
                       className="cursor-pointer hover:text-blue-600 transition-colors whitespace-nowrap"
-                      onClick={() => handleSort("type")}
+                      onClick={() => handleSort("balance")}
                     >
                       <div className="flex items-center gap-2">
-                        Type
+                        Balance
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:text-blue-600 transition-colors whitespace-nowrap"
+                      onClick={() => handleSort("category")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Category
                         <ArrowUpDown className="h-4 w-4" />
                       </div>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedTransactions.map((transaction, index) => (
+                  {sortedTransactions.slice(0, 50).map((transaction, index) => (
                     <TableRow 
                       key={index}
                       className="hover:bg-gray-50/50 transition-colors"
@@ -275,75 +584,46 @@ export default function Dashboard() {
                         {formatDate(transaction.date)}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
-                        {transaction.desc}
+                        {transaction.description}
                       </TableCell>
                       <TableCell
                         className={`whitespace-nowrap font-medium ${
-                          transaction.type === "debit"
+                          transaction.amount < 0
                             ? "text-red-600"
                             : "text-green-600"
                         }`}
                       >
-                        {transaction.type === "debit" ? "-" : "+"}
-                        {formatCurrency(transaction.amount)}
+                        {transaction.amount < 0 ? "-" : "+"}
+                        {formatCurrency(Math.abs(transaction.amount))}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap font-medium text-gray-700">
+                        {formatCurrency(transaction.balance)}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            transaction.type === "debit"
+                            transaction.amount < 0
                               ? "destructive"
                               : "default"
                           }
                           className="whitespace-nowrap"
                         >
-                          {transaction.type}
+                          {transaction.category}
                         </Badge>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              {sortedTransactions.length > 50 && (
+                <div className="text-center py-4 text-sm text-gray-500">
+                  Showing first 50 of {sortedTransactions.length} transactions
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
-
-        {/* Chart Placeholders */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingDown className="h-5 w-5 text-blue-500" />
-                Spending Trends
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 bg-gray-100/50 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <TrendingDown className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">Chart coming soon</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-colors shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-blue-500" />
-                Category Breakdown
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 bg-gray-100/50 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">Chart coming soon</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
-} 
+}
