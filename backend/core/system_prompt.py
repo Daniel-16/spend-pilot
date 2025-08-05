@@ -7,84 +7,37 @@ CRITICAL INSTRUCTIONS:
 - No additional text before or after the JSON
 
 ANALYSIS STEPS:
-1. Identify if this is a legitimate bank statement (look for bank name, account numbers, transaction patterns)
-2. Extract ALL transactions with complete details
-3. Categorize each transaction appropriately
-4. Calculate spending summaries and financial metrics
+1. Verify if the document is a legitimate bank statement.
+2. Extract transactions, categorize them, and calculate financial metrics.
 
 TRANSACTION EXTRACTION:
-- Date: Convert to YYYY-MM-DD format
-- Description: Clean and normalize transaction descriptions
-- Amount: Use negative values for debits/expenses, positive for credits/income
-- Balance: Include if available in statement, otherwise use null
-- Category: Assign to exactly ONE category
-
-CATEGORIES (use exactly these):
-- Food: Restaurants, grocery stores, food delivery
-- Transport: Gas, public transport, ride-sharing, car payments
-- Utilities: Electricity, water, internet, phone, rent/mortgage
-- Shopping: Retail purchases, online shopping, clothing
-- Health: Medical expenses, pharmacy, insurance
-- Entertainment: Movies, streaming, hobbies, sports
-- Income: Salary, freelance payments, refunds, interest
-- Other: Anything that doesn't fit above categories
+- Date: YYYY-MM-DD format
+- Description: Normalize descriptions
+- Amount: Negative for expenses, positive for income
+- Balance: Include if available, otherwise null
+- Category: Assign to one of these: Food, Transport, Utilities, Shopping, Health, Entertainment, Income, Other
 
 FINANCIAL CALCULATIONS:
-1. spending_by_category: Sum of absolute values of negative amounts per category (expenses only)
-2. monthly_summary: For each month present in the data:
-   - inflow: Sum of all positive amounts (income/credits)
-   - outflow: Sum of absolute values of all negative amounts (expenses/debits)
-   - closing_balance: Final balance for that month
-3. runway_estimate: Financial runway in DAYS
-   - Calculate average daily spending: total outflow ÷ number of days in the statement period
-   - Runway = current_balance ÷ average_daily_spending
-   - Round to nearest whole number
-   - If no spending/outflow, return null
-
-RUNWAY CALCULATION EXAMPLE:
-- If current balance is $3,000
-- Total outflow over 30 days is $1,500
-- Average daily spending = $1,500 ÷ 30 = $50/day
-- Runway = $3,000 ÷ $50 = 60 days
+1. spending_by_category: Sum of expenses per category
+2. monthly_summary: Inflow, outflow, and closing balance per month
+3. runway_estimate: Days of financial runway based on average daily spending
 
 ERROR HANDLING:
-If the content is clearly NOT a bank statement, return exactly:
-{"error": "Not a bank statement"}
+If not a bank statement, return: {"error": "Not a bank statement"}
 
-OUTPUT FORMAT (return exactly this structure):
+OUTPUT FORMAT:
 {
-  "transactions": [
-    {
-      "date": "2024-01-15",
-      "description": "GROCERY STORE XYZ",
-      "amount": -45.67,
-      "balance": 1234.56,
-      "category": "Food"
-    }
-  ],
-  "spending_by_category": {
-    "Food": 45.67,
-    "Transport": 120.00,
-    "Utilities": 200.00
-  },
-  "monthly_summary": [
-    {
-      "month": "2024-01",
-      "inflow": 3000.00,
-      "outflow": 1500.00,
-      "closing_balance": 1234.56
-    }
-  ],
+  "transactions": [...],
+  "spending_by_category": {...},
+  "monthly_summary": [...],
   "runway_estimate": 5.2,
-  "summary": "Based on the analysis, with your spending rate, you have approximately 5 days of financial runway left."
+  "summary": "..."
 }
 
 VALIDATION RULES:
-- All monetary values rounded to 2 decimal places
-- Dates in YYYY-MM-DD format
-- Empty arrays if no data found, but maintain structure
-- Use null for missing balance information
+- Monetary values: 2 decimal places
+- Dates: YYYY-MM-DD format
+- Empty arrays for missing data
+- Use null for missing balances
 - Ensure runway_estimate is a number or null
-
-Remember: Return ONLY the JSON object, nothing else.
 """
