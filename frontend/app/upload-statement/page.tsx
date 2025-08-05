@@ -1,139 +1,123 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, FileText, Target } from "lucide-react";
+import { Upload, FileText, Target, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useRouter } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { uploadStatement } from "@/lib/api";
 
 interface Transaction {
   date: string;
-  desc: string;
+  description: string;
   amount: number;
-  type: "debit" | "credit";
+  balance: number;
+  category: string;
+}
+
+interface SpendingByCategory {
+  [key: string]: number;
+}
+
+interface MonthlySummary {
+  month: string;
+  inflow: number;
+  outflow: number;
+  closing_balance: number;
 }
 
 interface AnalysisResult {
-  summary: string;
-  stats: {
-    avg_daily_spend: number;
-    total_debit: number;
-    runway_days: number;
-  };
   transactions: Transaction[];
+  spending_by_category: SpendingByCategory;
+  monthly_summary: MonthlySummary[];
+  runway_estimate: number;
 }
 
-type AppState = "upload" | "loading" | "results";
+type AppState = "upload" | "loading" | "error" | "success";
 
 export default function SpendPilot() {
   const [state, setState] = useState<AppState>("upload");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
-    null
-  );
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Transaction;
-    direction: "asc" | "desc";
-  } | null>(null);
+  const [error, setError] = useState<string>("");
   const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [processedData, setProcessedData] = useState<AnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const handleFileUpload = (file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      alert("File size must be less than 5MB");
+  const handleFileUpload = async (file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File size must be less than 10MB");
       return;
     }
 
-    if (file.type !== "application/pdf") {
-      alert("Please upload a PDF file");
+    const validTypes = ["application/pdf", "application/json", "text/plain"];
+    const isValidType = validTypes.includes(file.type) || 
+                       file.name.endsWith('.json') || 
+                       file.name.endsWith('.pdf');
+    
+    if (!isValidType) {
+      setError("Please upload a PDF or JSON file containing your bank statement");
       return;
     }
 
     setUploadedFile(file);
     setState("loading");
+    setError("");
+    setUploadProgress(0);
 
-    // Mock API call
-    setTimeout(() => {
-      const mockResult = {
-        summary:
-          "You spent heavily on food delivery and entertainment services this month. Your spending pattern shows frequent small transactions, with notable increases during weekends. Consider setting up automatic transfers to savings and reducing impulse purchases.",
-        stats: {
-          avg_daily_spend: 8500,
-          total_debit: 320000,
-          runway_days: 5.2,
-        },
-        transactions: [
-          {
-            date: "2025-07-01",
-            desc: "Uber Eats - Downtown",
-            amount: 2100,
-            type: "debit",
-          },
-          {
-            date: "2025-07-02",
-            desc: "Netflix Subscription",
-            amount: 3600,
-            type: "debit",
-          },
-          {
-            date: "2025-07-03",
-            desc: "Salary Deposit",
-            amount: 150000,
-            type: "credit",
-          },
-          {
-            date: "2025-07-04",
-            desc: "Grocery Store",
-            amount: 4500,
-            type: "debit",
-          },
-          {
-            date: "2025-07-05",
-            desc: "Gas Station",
-            amount: 1800,
-            type: "debit",
-          },
-          {
-            date: "2025-07-06",
-            desc: "Coffee Shop",
-            amount: 650,
-            type: "debit",
-          },
-          {
-            date: "2025-07-07",
-            desc: "Online Shopping",
-            amount: 12000,
-            type: "debit",
-          },
-          {
-            date: "2025-07-08",
-            desc: "ATM Withdrawal",
-            amount: 5000,
-            type: "debit",
-          },
-          {
-            date: "2025-07-09",
-            desc: "Restaurant",
-            amount: 3200,
-            type: "debit",
-          },
-          {
-            date: "2025-07-10",
-            desc: "Freelance Income",
-            amount: 25000,
-            type: "credit",
-          },
-        ],
-      };
-      // Store result in localStorage and redirect
-      localStorage.setItem(
-        "spendpilot_analysis_result",
-        JSON.stringify(mockResult)
-      );
-      router.push("/dashboard");
-    }, 3000);
+    try {
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + Math.random() * 15;
+        });
+      }, 500);
+
+      const analysisResult = await uploadStatement(file);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      setProcessedData(analysisResult);
+      setState("success");
+    
+      setTimeout(() => {
+        localStorage.setItem("spendpilot_analysis_result", JSON.stringify(analysisResult));
+        router.push("/dashboard");
+      }, 1000);
+      
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      
+      let errorMessage = "Failed to process your statement. Please try again.";
+      
+      if (error.response?.status === 422) {
+        errorMessage = "Invalid file format. Please ensure your file contains valid bank statement data.";
+      } else if (error.response?.status === 413) {
+        errorMessage = "File too large. Please upload a smaller file.";
+      } else if (error.response?.status === 429) {
+        errorMessage = "Too many requests. Please wait a moment and try again.";
+      } else if (error.response?.data?.detail) {
+        if (typeof error.response.data.detail === 'string') {
+          errorMessage = error.response.data.detail;
+        } else if (Array.isArray(error.response.data.detail)) {
+          errorMessage = error.response.data.detail.map((err: any) => err.msg || err).join(", ");
+        }
+      } else if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = "Request timeout. The file might be too large or the server is busy.";
+      }
+      
+      setError(errorMessage);
+      setState("error");
+      setUploadProgress(0);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -162,55 +146,20 @@ export default function SpendPilot() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount / 100);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const handleSort = (key: keyof Transaction) => {
-    let direction: "asc" | "desc" = "asc";
-    if (
-      sortConfig &&
-      sortConfig.key === key &&
-      sortConfig.direction === "asc"
-    ) {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedTransactions = analysisResult?.transactions
-    ? [...analysisResult.transactions].sort((a, b) => {
-        if (!sortConfig) return 0;
-
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-
-        if (sortConfig.direction === "asc") {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return aValue < bValue ? 1 : -1;
-        }
-      })
-    : [];
-
-  const resetApp = () => {
+  const resetUpload = () => {
     setState("upload");
     setUploadedFile(null);
-    setAnalysisResult(null);
-    setSortConfig(null);
+    setError("");
+    setUploadProgress(0);
+    setProcessedData(null);
+  };
+
+  const retryUpload = () => {
+    if (uploadedFile) {
+      handleFileUpload(uploadedFile);
+    } else {
+      resetUpload();
+    }
   };
 
   if (state === "upload") {
@@ -243,8 +192,7 @@ export default function SpendPilot() {
                     Upload Your Bank Statement
                   </h3>
                   <p className="text-gray-200 mb-6 text-sm sm:text-base">
-                    Drag and drop your PDF bank statement here, or click to
-                    browse
+                    Drag and drop your bank statement here, or click to browse
                   </p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
@@ -257,19 +205,19 @@ export default function SpendPilot() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".pdf"
+                    accept=".pdf,.json"
                     onChange={handleFileInput}
                     className="hidden"
                   />
                   <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-white">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4" />
-                      <span>Maximum 5MB</span>
+                      <span>Maximum 10MB</span>
                     </div>
                     <div className="hidden sm:block w-px h-4 bg-gray-300"></div>
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
-                      <span>PDF format only</span>
+                      <span>PDF or JSON format</span>
                     </div>
                   </div>
                 </div>
@@ -289,28 +237,92 @@ export default function SpendPilot() {
           <CardContent className="p-8 text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-100 border-t-transparent mx-auto mb-6"></div>
             <h2 className="text-2xl font-bold text-white mb-2">
-              Analyzing Your Statement
+              {uploadProgress < 95 ? "Uploading..." : "Processing..."}
             </h2>
             <p className="text-gray-100 mb-4">
-              Our AI is processing your bank statement and extracting
-              insights...
+              {uploadProgress < 95 
+                ? "Uploading your bank statement..." 
+                : "Analyzing your data and extracting insights..."
+              }
             </p>
             <div className="bg-gray-200 rounded-full h-3 mb-2">
               <div
-                className="bg-blue-600 h-3 rounded-full animate-pulse"
-                style={{ width: "65%" }}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
-            <p className="text-sm text-gray-100">This may take a few moments</p>
+            <p className="text-sm text-gray-100">
+              {uploadProgress.toFixed(0)}% complete
+            </p>
+            <button
+              onClick={resetUpload}
+              className="mt-4 text-sm text-gray-300 hover:text-white transition-colors underline"
+            >
+              Cancel
+            </button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (state === "results") {
-    // This state is now handled by /dashboard
-    return null;
+  if (state === "success") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#312e81] to-[#a21caf] text-white flex items-center justify-center">
+        <Card className="max-w-xl mx-auto bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
+          <CardContent className="p-8 text-center">
+            <CheckCircle2 className="h-16 w-16 text-green-400 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Analysis Complete!
+            </h2>
+            <p className="text-gray-100 mb-4">
+              Your bank statement has been successfully analyzed. Redirecting to dashboard...
+            </p>
+            <div className="bg-green-200 rounded-full h-3 mb-2">
+              <div className="bg-green-600 h-3 rounded-full w-full"></div>
+            </div>
+            <p className="text-sm text-gray-100">
+              Processing complete
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#312e81] to-[#a21caf] text-white flex items-center justify-center">
+        <Card className="max-w-xl mx-auto bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Upload Failed
+            </h2>
+            <Alert className="mb-6 border-red-500/50 bg-red-900/20 backdrop-blur-sm text-left">
+              <AlertCircle className="h-4 w-4 text-red-400" />
+              <AlertDescription className="text-red-200">
+                {error}
+              </AlertDescription>
+            </Alert>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={retryUpload}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={resetUpload}
+                className="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-700 transition-colors"
+              >
+                Choose Different File
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return null;
