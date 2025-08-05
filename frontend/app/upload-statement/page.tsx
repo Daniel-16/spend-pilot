@@ -1,30 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import {
-  Upload,
-  FileText,
-  TrendingDown,
-  TrendingUp,
-  Calendar,
-  DollarSign,
-  AlertTriangle,
-  ArrowUpDown,
-  Target,
-  Sparkles,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Upload, FileText, Target } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useRouter } from "next/navigation";
@@ -306,24 +284,24 @@ export default function SpendPilot() {
 
   if (state === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#312e81] to-[#a21caf] text-white flex items-center justify-center">
+        <Card className="max-w-xl mx-auto bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
           <CardContent className="p-8 text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-100 border-t-transparent mx-auto mb-6"></div>
+            <h2 className="text-2xl font-bold text-white mb-2">
               Analyzing Your Statement
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-100 mb-4">
               Our AI is processing your bank statement and extracting
               insights...
             </p>
-            <div className="bg-gray-200 rounded-full h-2 mb-2">
+            <div className="bg-gray-200 rounded-full h-3 mb-2">
               <div
-                className="bg-blue-600 h-2 rounded-full animate-pulse"
+                className="bg-blue-600 h-3 rounded-full animate-pulse"
                 style={{ width: "65%" }}
               ></div>
             </div>
-            <p className="text-sm text-gray-500">This may take a few moments</p>
+            <p className="text-sm text-gray-100">This may take a few moments</p>
           </CardContent>
         </Card>
       </div>

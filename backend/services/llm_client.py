@@ -14,16 +14,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 async def analyze_pdf_with_gemini(file_content: bytes, content_type: str) -> Dict[str, Any]:
-    """
-    Analyze PDF content with Gemini using LangChain integration.
-    
-    Args:
-        file_content: Raw PDF bytes
-        content_type: MIME type of the file
-    
-    Returns:
-        Dictionary containing analysis results
-    """
     if not settings.GEMINI_API_KEY:
         raise RuntimeError("Gemini API key not configured.")
     
