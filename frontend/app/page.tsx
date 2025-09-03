@@ -20,7 +20,7 @@ const LandingPage = () => {
       </div>
 
       <div className="relative z-10">
-        <Navigation />
+        {/* <Navigation /> */}
         <HeroSection />
         <StatSection />
         <FeaturesSection />
