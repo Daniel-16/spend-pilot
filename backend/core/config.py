@@ -9,7 +9,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:8000",
     ]
-    MAX_FILE_SIZE: int = 1024 * 1024 * 10  # 10MB
+    MAX_FILE_SIZE: int = 1024 * 1024 * 10
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 
     class Config:
