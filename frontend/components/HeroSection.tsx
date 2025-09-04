@@ -49,7 +49,7 @@ export function HeroSection() {
             ? "bg-gradient-to-br from-blue-400/25 to-cyan-200/10 border border-blue-200/30 shadow-sm"
             : "bg-white/30 border border-slate-100/40"
             }`}
-            style={{ height: "120px" }}
+            style={{ height: "120px", width: "100px" }}
           />
             );
           })}
@@ -84,15 +84,16 @@ export function HeroSection() {
             your money goes each month.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/upload-statement"
-              className="group relative bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 flex items-center justify-center overflow-hidden"
+              className="group relative bg-blue-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 hover:scale-105 flex items-center justify-center overflow-hidden w-full sm:w-auto"
             >
-              Analyze My Spending
-              <ArrowRight className="ml-3 h-5 w-5" />
+              <span className="hidden sm:inline">Analyze My Spending</span>
+              <span className="sm:hidden">Analyze Spending</span>
+              <ArrowRight className="ml-2 sm:ml-3 h-4 w-4 sm:h-5 sm:w-5" />
             </Link>
-          </div>
+            </div>
         </div>
 
         <div className="relative max-w-6xl mx-auto">
