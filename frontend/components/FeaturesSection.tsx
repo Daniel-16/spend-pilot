@@ -1,5 +1,4 @@
 import { Target, Rocket, Brain, Shield, Zap, CheckCircle } from "lucide-react";
-import { useState, useEffect } from "react";
 
 const features = [
   {
@@ -47,52 +46,12 @@ const features = [
 ];
 
 export function FeaturesSection() {
-  const [scrollY, setScrollY] = useState(0);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleScroll = () => setScrollY(window.scrollY);
-      window.addEventListener("scroll", handleScroll);
-      return () => window.removeEventListener("scroll", handleScroll);
-    }
-  }, []);
 
   return (
     <section
       id="features"
-      className="relative px-6 py-14 overflow-hidden bg-white mb-10"
-      style={{ transform: `translateY(${scrollY * 0.04}px)` }}
+      className="relative px-6 py-14 overflow-hidden bg-transparent mb-10"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(0deg, rgba(2,6,23,0.03) 0 1px, transparent 2px 120px), repeating-linear-gradient(90deg, rgba(2,6,23,0.03) 0 1px, transparent 2px 120px)",
-          backgroundSize: "120px 120px, 120px 120px",
-        }}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-full max-w-7xl px-6 py-8 h-full">
-            <div className="grid grid-cols-8 gap-4 h-full">
-              {Array.from({ length: 8 * 4 }).map((_, i) => {
-                const isBlue = i % 4 === 0;
-                return (
-                  <div
-                    key={i}
-                    className={`rounded-lg w-full pointer-events-none transition-all transform ${
-                      isBlue
-                        ? "bg-gradient-to-br from-blue-400/20 to-cyan-200/10 border border-blue-200/30 shadow-sm"
-                        : "bg-white/40 border border-slate-100/40"
-                    }`}
-                    style={{ height: "120px" }}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto relative">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-blue-500">
@@ -107,32 +66,34 @@ export function FeaturesSection() {
           </p>
         </div>
 
-		<div className="relative">
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10 features-grid">
-				<style>{`
+        <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10 features-grid">
+            <style>{`
 					.features-grid .group {
 						background: linear-gradient(to bottom, #dbeafe 0%, #ffffff 60%) !important;
 					}
 				`}</style>
-				{features.map((feature, index) => (
-					<div
-						key={index}
-						className="group bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-xl transition-all duration-300"
-						style={{ animationDelay: feature.delay }}
-					>
-						<div
-							className={`bg-blue-500 p-3 rounded-xl w-fit mb-5 text-white shadow-sm`}
-						>
-							<feature.icon className="h-5 w-5 text-white" />
-						</div>
-						<h3 className="text-xl font-semibold text-slate-800 mb-3">
-							{feature.title}
-						</h3>
-						<p className="text-slate-600 leading-relaxed">{feature.description}</p>
-					</div>
-				))}
-			</div>
-		</div>
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="group bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-xl transition-all duration-300"
+                style={{ animationDelay: feature.delay }}
+              >
+                <div
+                  className={`bg-blue-500 p-3 rounded-xl w-fit mb-5 text-white shadow-sm`}
+                >
+                  <feature.icon className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800 mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
