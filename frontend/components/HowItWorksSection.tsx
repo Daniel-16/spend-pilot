@@ -12,28 +12,28 @@ export function HowItWorksSection() {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           backgroundImage:
-        "repeating-linear-gradient(0deg, rgba(2,6,23,0.03) 0 2px, transparent 2px 120px), repeating-linear-gradient(90deg, rgba(2,6,23,0.03) 0 2px, transparent 2px 120px)",
+            "repeating-linear-gradient(0deg, rgba(2,6,23,0.03) 0 2px, transparent 2px 120px), repeating-linear-gradient(90deg, rgba(2,6,23,0.03) 0 2px, transparent 2px 120px)",
           backgroundSize: "120px 120px, 120px 120px",
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-full max-w-7xl px-6 py-8 h-full">
-        <div className="grid grid-cols-8 gap-4 h-full">
-          {Array.from({ length: 8 * 6 }).map((_, i) => {
-            const isBlue = i % 3 === 0;
-            return (
-          <div
-            key={i}
-            className={`rounded-lg w-full pointer-events-none transition-all transform ${
-              isBlue
-            ? "bg-gradient-to-br from-blue-400/25 to-cyan-200/10 border border-blue-200/30 shadow-sm"
-            : "bg-white/30 border border-slate-100/40"
-            }`}
-            style={{ height: "120px" }}
-          />
-            );
-          })}
-        </div>
+            <div className="grid grid-cols-8 gap-4 h-full">
+              {Array.from({ length: 8 * 6 }).map((_, i) => {
+                const isBlue = i % 3 === 0;
+                return (
+                  <div
+                    key={i}
+                    className={`rounded-lg w-full pointer-events-none transition-all transform ${
+                      isBlue
+                        ? "bg-gradient-to-br from-blue-400/25 to-cyan-200/10 border border-blue-200/30 shadow-sm"
+                        : "bg-white/30 border border-slate-100/40"
+                    }`}
+                    style={{ height: "120px" }}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -86,15 +86,19 @@ export function HowItWorksSection() {
             <div
               key={index}
               className="group bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300"
-              style={{ animationDelay: `${index * 200}ms` }}
             >
+              <style>{`
+					.group {
+						background: linear-gradient(to top, #dbeafe 0%, #ffffff 60%) !important;
+					}
+				`}</style>
               <div className="relative mb-5">
                 <div
-                  className={`bg-gradient-to-r ${step.gradient} p-3 rounded-xl w-fit text-white shadow-sm`}
+                  className={`bg-blue-500 p-3 rounded-xl w-fit text-white shadow-sm`}
                 >
                   <step.icon className="h-5 w-5 text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center">
                   {step.step}
                 </div>
               </div>
