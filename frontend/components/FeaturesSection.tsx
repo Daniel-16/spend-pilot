@@ -7,7 +7,6 @@ const features = [
     title: "AI-Powered Analysis",
     description:
       "Advanced machine learning algorithms analyze your spending patterns and provide personalized insights.",
-    gradient: "from-blue-400 to-cyan-300",
     delay: "0ms",
   },
   {
@@ -15,7 +14,6 @@ const features = [
     title: "Financial Runway",
     description:
       "Calculate exactly how long your money will last based on current spending habits and income.",
-    gradient: "from-indigo-400 to-purple-400",
     delay: "100ms",
   },
   {
@@ -23,7 +21,6 @@ const features = [
     title: "Smart Recommendations",
     description:
       "Get actionable insights to optimize spending and accelerate your savings growth.",
-    gradient: "from-purple-400 to-pink-300",
     delay: "200ms",
   },
   {
@@ -31,7 +28,6 @@ const features = [
     title: "Bank-Level Security",
     description:
       "Your data is encrypted and processed securely. We never store your financial information.",
-    gradient: "from-green-400 to-emerald-300",
     delay: "300ms",
   },
   {
@@ -39,7 +35,6 @@ const features = [
     title: "Instant Processing",
     description:
       "Upload your statement and get comprehensive analysis in seconds, not hours.",
-    gradient: "from-yellow-400 to-orange-300",
     delay: "400ms",
   },
   {
@@ -47,7 +42,6 @@ const features = [
     title: "Actionable Reports",
     description:
       "Detailed reports with specific steps you can take to improve your financial health.",
-    gradient: "from-teal-400 to-cyan-300",
     delay: "500ms",
   },
 ];
@@ -125,7 +119,7 @@ export function FeaturesSection() {
 						style={{ animationDelay: feature.delay }}
 					>
 						<div
-							className={`bg-gradient-to-r ${feature.gradient} p-3 rounded-xl w-fit mb-5 text-white shadow-sm`}
+							className={`bg-blue-500 p-3 rounded-xl w-fit mb-5 text-white shadow-sm`}
 						>
 							<feature.icon className="h-5 w-5 text-white" />
 						</div>
