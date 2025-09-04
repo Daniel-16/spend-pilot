@@ -63,7 +63,7 @@ export function FeaturesSection() {
   return (
     <section
       id="features"
-      className="relative px-6 py-14 overflow-hidden bg-white"
+      className="relative px-6 py-14 overflow-hidden bg-white mb-10"
       style={{ transform: `translateY(${scrollY * 0.04}px)` }}
     >
       <div
@@ -121,7 +121,7 @@ export function FeaturesSection() {
 				{features.map((feature, index) => (
 					<div
 						key={index}
-						className="group bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300"
+						className="group bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-xl transition-all duration-300"
 						style={{ animationDelay: feature.delay }}
 					>
 						<div
