@@ -23,7 +23,7 @@ export function StatSection() {
               <div className="text-3xl font-bold text-white mb-2">
                 {stat.value}
               </div>
-              <div className="text-gray-400">{stat.label}</div>
+              <div className="text-gray-700">{stat.label}</div>
             </div>
           ))}
         </div>

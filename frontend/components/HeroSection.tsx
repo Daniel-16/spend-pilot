@@ -56,9 +56,6 @@ export function HeroSection() {
         </div>
           </div>
         </div>
-
-        {/* <div className="absolute left-0 top-0 h-full w-56 bg-gradient-to-r from-blue-500 to-transparent opacity-50" />
-        <div className="absolute right-0 top-0 h-full w-56 bg-gradient-to-l from-cyan-50 to-transparent opacity-40" /> */}
       </div>
 
 
@@ -78,7 +75,7 @@ export function HeroSection() {
             </span>
           </h1>
 
-          <p className="text-md md:text-lg text-slate-500 mb-8 max-w-3xl mx-auto">
+          <p className="text-md md:text-lg text-slate-700 mb-8 max-w-3xl mx-auto">
             Upload your bank statement to instantly calculate your financial
             runway, understand your daily spending patterns, and identify where
             your money goes each month.

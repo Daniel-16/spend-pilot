@@ -11,7 +11,7 @@ export function CTASection() {
               Financial Future?
             </span>
           </h2>
-          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-700 mb-12 max-w-2xl mx-auto">
             Join thousands of users who have already optimized their spending
             and accelerated their savings with AI-powered insights.
           </p>
