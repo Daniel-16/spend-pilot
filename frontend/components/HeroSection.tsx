@@ -49,16 +49,13 @@ export function HeroSection() {
             ? "bg-gradient-to-br from-blue-400/25 to-cyan-200/10 border border-blue-200/30 shadow-sm"
             : "bg-white/30 border border-slate-100/40"
             }`}
-            style={{ height: "120px" }}
+            style={{ height: "120px", width: "100px" }}
           />
             );
           })}
         </div>
           </div>
         </div>
-
-        {/* <div className="absolute left-0 top-0 h-full w-56 bg-gradient-to-r from-blue-500 to-transparent opacity-50" />
-        <div className="absolute right-0 top-0 h-full w-56 bg-gradient-to-l from-cyan-50 to-transparent opacity-40" /> */}
       </div>
 
 
@@ -78,21 +75,22 @@ export function HeroSection() {
             </span>
           </h1>
 
-          <p className="text-md md:text-lg text-slate-500 mb-8 max-w-3xl mx-auto">
+          <p className="text-md md:text-lg text-slate-700 mb-8 max-w-3xl mx-auto">
             Upload your bank statement to instantly calculate your financial
             runway, understand your daily spending patterns, and identify where
             your money goes each month.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/upload-statement"
-              className="group relative bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 flex items-center justify-center overflow-hidden"
+              className="group relative bg-blue-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 hover:scale-105 flex items-center justify-center overflow-hidden w-full sm:w-auto"
             >
-              Analyze My Spending
-              <ArrowRight className="ml-3 h-5 w-5" />
+              <span className="hidden sm:inline">Analyze My Spending</span>
+              <span className="sm:hidden">Analyze Spending</span>
+              <ArrowRight className="ml-2 sm:ml-3 h-4 w-4 sm:h-5 sm:w-5" />
             </Link>
-          </div>
+            </div>
         </div>
 
         <div className="relative max-w-6xl mx-auto">

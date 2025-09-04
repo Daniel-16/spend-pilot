@@ -22,10 +22,10 @@ const LandingPage = () => {
       <div className="relative z-10">
         {/* <Navigation /> */}
         <HeroSection />
-        <StatSection />
+        {/* <StatSection /> */}
         <FeaturesSection />
         <HowItWorksSection />
-        <CTASection />
+        {/* <CTASection /> */}
         <Footer />
       </div>
 
