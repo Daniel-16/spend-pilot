@@ -1,8 +1,18 @@
+"use client";
+import { useState, useEffect } from "react";
 import { TrendingUp } from "lucide-react";
 
 export function Footer() {
   const date = new Date();
   const year = date.getFullYear();
+  const [scrollY, setScrollY] = useState(0);
+  useEffect(() => {
+      if (typeof window !== "undefined") {
+        const handleScroll = () => setScrollY(window.scrollY);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+      }
+    }, []);
 
   return (
     <footer
