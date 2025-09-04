@@ -66,7 +66,6 @@ export function FeaturesSection() {
       className="relative px-6 py-14 overflow-hidden bg-white"
       style={{ transform: `translateY(${scrollY * 0.04}px)` }}
     >
-      {/* checkered background like Hero */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
