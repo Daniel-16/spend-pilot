@@ -1,6 +1,16 @@
+"use client";
+import { useState, useEffect } from "react";
 import { Upload, BarChart3, TrendingUp } from "lucide-react";
 
 export function HowItWorksSection() {
+  const [scrollY, setScrollY] = useState(0);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleScroll = () => setScrollY(window.scrollY);
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
   return (
     <section
       id="how-it-works"
