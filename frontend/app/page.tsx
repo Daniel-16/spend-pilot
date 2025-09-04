@@ -25,7 +25,7 @@ const LandingPage = () => {
         {/* <StatSection /> */}
         <FeaturesSection />
         <HowItWorksSection />
-        <CTASection />
+        {/* <CTASection /> */}
         <Footer />
       </div>
 
