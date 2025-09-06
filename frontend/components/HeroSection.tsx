@@ -12,9 +12,8 @@ export function HeroSection() {
   return (
     <>
       <section
-        className="relative px-6 py-10 overflow-hidden bg-transparent"
-      >
-        <Navigation />
+        className="relative px-6 py-40 overflow-hidden bg-transparent"
+      >        
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 px-6">
             <div className="inline-flex items-center gap-2 backdrop-blur-sm border-2 border-blue-500/10 rounded-full px-5 py-2 mb-6 shadow-lg">
