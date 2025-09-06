@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, FileText, Target, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
@@ -45,7 +45,17 @@ export default function SpendPilot() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processedData, setProcessedData] = useState<AnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [scrollY, setScrollY] = useState(0);
   const router = useRouter();
+
+  useEffect(() => {
+      if (typeof window !== "undefined") {
+        const handleScroll = () => setScrollY(window.scrollY);
+        setScrollY(window.scrollY);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+      }
+    }, []);
 
   const handleFileUpload = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
@@ -164,34 +174,59 @@ export default function SpendPilot() {
 
   if (state === "upload") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#312e81] to-[#a21caf] text-white overflow-x-hidden relative font-sans">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute top-1/4 left-1/4 w-[32rem] h-[32rem] bg-blue-400/20 rounded-full blur-[120px] shadow-2xl animate-pulse"></div>
-          <div className="absolute top-2/3 right-1/4 w-[24rem] h-[24rem] bg-fuchsia-500/20 rounded-full blur-[100px] shadow-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-[28rem] h-[28rem] bg-indigo-400/20 rounded-full blur-[100px] shadow-xl animate-pulse delay-2000"></div>
-          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white/10 to-transparent z-10" />
-          <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-white/10 to-transparent z-10" />
+      <div className="min-h-screen bg-white text-white relative font-sans">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          transform: `translateY(${scrollY * 0.06}px)`,
+          backgroundImage:
+            "repeating-linear-gradient(0deg, rgba(2,6,23,0.03) 0 2px, transparent 2px 120px), repeating-linear-gradient(90deg, rgba(2,6,23,0.03) 0 2px, transparent 2px 120px)",
+          backgroundSize: "120px 120px, 120px 120px",
+        }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-full max-w-7xl px-6 py-8 h-full">
+            <div className="grid grid-cols-8 gap-4 h-full">
+              {Array.from({ length: 8 * 6 }).map((_, i) => {
+                const isBlue = i % 3 === 0;
+                return (
+                  <div
+                    key={i}
+                    className={`rounded-lg w-full pointer-events-none transition-all transform ${
+                      isBlue
+                        ? "bg-gradient-to-br from-blue-400/25 to-cyan-200/10 border border-blue-200/30 shadow-sm"
+                        : "bg-white/30 border border-slate-100/40"
+                    }`}
+                    style={{ height: "140px", width: "100px" }}
+                  />
+                );
+              })}
+            </div>
+          </div>
         </div>
+      </div>
+        
         <Navigation />
-        <div className="min-h-screen p-4">
-          <div className="max-w-4xl mx-auto mt-5">
-            <Card className="max-w-2xl mx-auto bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
+        <div className="min-h-screen p-4 pt-24">
+          <div className="max-w-4xl mx-auto mt-6">
+            <Card className="max-w-2xl mx-auto bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl">
               <CardContent className="p-4 sm:p-8">
                 <div
                   className={`border-2 border-dashed rounded-lg p-6 sm:p-12 text-center transition-all duration-200 ${
                     isDragOver
-                      ? "border-blue-500 bg-blue-400/10"
-                      : "border-white/20 hover:border-blue-400 bg-white/5"
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-slate-200 hover:border-blue-400 bg-white"
                   }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                 >
-                  <Upload className="h-12 w-12 sm:h-16 sm:w-16 text-blue-400 mx-auto mb-4" />
-                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                  <Upload className="h-12 w-12 sm:h-16 sm:w-16 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">
                     Upload Your Bank Statement
                   </h3>
-                  <p className="text-gray-200 mb-6 text-sm sm:text-base">
+                  <p className="text-slate-600 mb-6 text-sm sm:text-base">
                     Drag and drop your bank statement here, or click to browse
                   </p>
                   <button
@@ -209,7 +244,7 @@ export default function SpendPilot() {
                     onChange={handleFileInput}
                     className="hidden"
                   />
-                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-white">
+                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-slate-600">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4" />
                       <span>Maximum 10MB</span>
@@ -232,31 +267,31 @@ export default function SpendPilot() {
 
   if (state === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#312e81] to-[#a21caf] text-white flex items-center justify-center">
-        <Card className="max-w-xl mx-auto bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
+      <div className="min-h-screen bg-white text-slate-900 flex items-center justify-center">
+        <Card className="max-w-xl mx-auto bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl">
           <CardContent className="p-8 text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-100 border-t-transparent mx-auto mb-6"></div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 border-t-transparent mx-auto mb-6"></div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
               {uploadProgress < 95 ? "Uploading..." : "Processing..."}
             </h2>
-            <p className="text-gray-100 mb-4">
+            <p className="text-slate-600 mb-4">
               {uploadProgress < 95 
                 ? "Uploading your bank statement..." 
                 : "Analyzing your data and extracting insights..."
               }
             </p>
-            <div className="bg-gray-200 rounded-full h-3 mb-2">
+            <div className="bg-slate-100 rounded-full h-3 mb-2">
               <div
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
-            <p className="text-sm text-gray-100">
+            <p className="text-sm text-slate-600">
               {uploadProgress.toFixed(0)}% complete
             </p>
             <button
               onClick={resetUpload}
-              className="mt-4 text-sm text-gray-300 hover:text-white transition-colors underline"
+              className="mt-4 text-sm text-slate-600 hover:text-slate-900 transition-colors underline"
             >
               Cancel
             </button>
@@ -268,20 +303,20 @@ export default function SpendPilot() {
 
   if (state === "success") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#312e81] to-[#a21caf] text-white flex items-center justify-center">
-        <Card className="max-w-xl mx-auto bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
+      <div className="min-h-screen bg-white text-slate-900 flex items-center justify-center">
+        <Card className="max-w-xl mx-auto bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl">
           <CardContent className="p-8 text-center">
-            <CheckCircle2 className="h-16 w-16 text-green-400 mx-auto mb-6" />
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Analysis Complete!
             </h2>
-            <p className="text-gray-100 mb-4">
+            <p className="text-slate-600 mb-4">
               Your bank statement has been successfully analyzed. Redirecting to dashboard...
             </p>
-            <div className="bg-green-200 rounded-full h-3 mb-2">
+            <div className="bg-green-100 rounded-full h-3 mb-2">
               <div className="bg-green-600 h-3 rounded-full w-full"></div>
             </div>
-            <p className="text-sm text-gray-100">
+            <p className="text-sm text-slate-600">
               Processing complete
             </p>
           </CardContent>
@@ -292,16 +327,16 @@ export default function SpendPilot() {
 
   if (state === "error") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#312e81] to-[#a21caf] text-white flex items-center justify-center">
-        <Card className="max-w-xl mx-auto bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
+      <div className="min-h-screen bg-white text-slate-900 flex items-center justify-center">
+        <Card className="max-w-xl mx-auto bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl">
           <CardContent className="p-8 text-center">
-            <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-6" />
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <AlertCircle className="h-16 w-16 text-red-600 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Upload Failed
             </h2>
-            <Alert className="mb-6 border-red-500/50 bg-red-900/20 backdrop-blur-sm text-left">
-              <AlertCircle className="h-4 w-4 text-red-400" />
-              <AlertDescription className="text-red-200">
+            <Alert className="mb-6 border-red-200/60 bg-red-50 backdrop-blur-sm text-left">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-700">
                 {error}
               </AlertDescription>
             </Alert>
