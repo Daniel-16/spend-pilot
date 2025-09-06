@@ -186,7 +186,7 @@ export default function SpendPilot() {
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-full max-w-7xl px-6 py-8 h-full">
+          <div className="w-full max-w-7xl px-6 py-2 h-full">
             <div className="grid grid-cols-8 gap-4 h-full">
               {Array.from({ length: 8 * 6 }).map((_, i) => {
                 const isBlue = i % 3 === 0;

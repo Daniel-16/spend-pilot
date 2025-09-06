@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export function Navigation() {
   return (
-    <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 backdrop-blur-md bg-white/20 border border-white/20 rounded-full shadow-lg shadow-black/5 w-11/12 max-w-5xl">
+    <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 backdrop-blur-md bg-white/20 border border-gradient-to-r from-white/30 to-white/10 rounded-full shadow-inner shadow-black/5 w-11/12 max-w-5xl">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-9 h-9 bg-gradient-to-r from-blue-400 to-indigo-500 p-2 rounded-lg shadow-sm flex items-center justify-center">
