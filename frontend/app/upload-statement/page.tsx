@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, FileText, Target, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
@@ -45,7 +45,17 @@ export default function SpendPilot() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processedData, setProcessedData] = useState<AnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [scrollY, setScrollY] = useState(0);
   const router = useRouter();
+
+  useEffect(() => {
+      if (typeof window !== "undefined") {
+        const handleScroll = () => setScrollY(window.scrollY);
+        setScrollY(window.scrollY);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+      }
+    }, []);
 
   const handleFileUpload = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
