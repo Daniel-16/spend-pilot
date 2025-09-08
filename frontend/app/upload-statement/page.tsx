@@ -52,9 +52,56 @@ export default function SpendPilot() {
   const [processedData, setProcessedData] = useState<AnalysisResult | null>(
     null
   );
+  const [currentLoadingText, setCurrentLoadingText] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const router = useRouter();
+
+  const getLoadingMessages = (progress: number) => {
+    if (progress <= 15) {
+      return [
+        "Establishing secure connection...",
+        "Validating file format...",
+        "Initializing upload process...",
+        "Checking file integrity...",
+      ];
+    } else if (progress <= 35) {
+      return [
+        "Uploading your statement...",
+        "Transferring data securely...",
+        "Processing file chunks...",
+        "Verifying upload integrity...",
+      ];
+    } else if (progress <= 55) {
+      return [
+        "Parsing document structure...",
+        "Extracting transaction data...",
+        "Identifying data patterns...",
+        "Cleaning and validating entries...",
+      ];
+    } else if (progress <= 75) {
+      return [
+        "Categorizing transactions...",
+        "Analyzing spending patterns...",
+        "Calculating financial metrics...",
+        "Detecting recurring payments...",
+      ];
+    } else if (progress <= 90) {
+      return [
+        "Generating insights...",
+        "Creating spending summaries...",
+        "Calculating runway estimates...",
+        "Building monthly breakdowns...",
+      ];
+    } else {
+      return [
+        "Finalizing analysis...",
+        "Optimizing data structure...",
+        "Preparing dashboard...",
+        "Almost ready!",
+      ];
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -64,6 +111,17 @@ export default function SpendPilot() {
       return () => window.removeEventListener("scroll", handleScroll);
     }
   }, []);
+
+  useEffect(() => {
+    if (state === "loading") {
+      const messages = getLoadingMessages(uploadProgress);
+      const interval = setInterval(() => {
+        setCurrentLoadingText((prev) => (prev + 1) % messages.length);
+      }, 1500);
+
+      return () => clearInterval(interval);
+    }
+  }, [state, uploadProgress]);
 
   const handleFileUpload = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
@@ -88,21 +146,43 @@ export default function SpendPilot() {
     setState("loading");
     setError("");
     setUploadProgress(0);
+    setCurrentLoadingText(0);
 
     try {
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + Math.random() * 15;
-        });
-      }, 500);
+      const progressStages = [
+        { target: 15, duration: 800 },
+        { target: 35, duration: 1200 },
+        { target: 55, duration: 1500 },
+        { target: 75, duration: 1800 },
+        { target: 90, duration: 1000 },
+      ];
+
+      let currentProgress = 0;
+      
+      for (const stage of progressStages) {
+        const startTime = Date.now();
+        const startProgress = currentProgress;
+        const progressDiff = stage.target - startProgress;
+        
+        while (currentProgress < stage.target) {
+          const elapsed = Date.now() - startTime;
+          const stageProgress = Math.min(elapsed / stage.duration, 1);
+          currentProgress = startProgress + (progressDiff * stageProgress);
+          
+          const randomVariation = (Math.random() - 0.5) * 3;
+          const displayProgress = Math.max(0, Math.min(stage.target, currentProgress + randomVariation));
+          
+          setUploadProgress(displayProgress);
+          
+          if (stageProgress >= 1) break;
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
 
       const analysisResult = await uploadStatement(file);
 
-      clearInterval(progressInterval);
       setUploadProgress(100);
       setProcessedData(analysisResult);
       setState("success");
@@ -183,6 +263,7 @@ export default function SpendPilot() {
     setError("");
     setUploadProgress(0);
     setProcessedData(null);
+    setCurrentLoadingText(0);
   };
 
   const retryUpload = () => {
@@ -287,6 +368,9 @@ export default function SpendPilot() {
   }
 
   if (state === "loading") {
+    const loadingMessages = getLoadingMessages(uploadProgress);
+    const currentMessage = loadingMessages[currentLoadingText];
+
     return (
       <div className="min-h-screen bg-white text-slate-900 relative font-sans overflow-x-hidden">
         <div
@@ -326,27 +410,76 @@ export default function SpendPilot() {
           <div className="max-w-4xl mx-auto mt-6">
             <Card className="max-w-2xl mx-auto bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl">
               <CardContent className="p-8 text-center">
-                <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 border-t-transparent mx-auto mb-6"></div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                  {uploadProgress < 95 ? "Uploading..." : "Processing..."}
-                </h2>
-                <p className="text-slate-600 mb-4">
-                  {uploadProgress < 95
-                    ? "Uploading your bank statement..."
-                    : "Analyzing your data and extracting insights..."}
-                </p>
-                <div className="bg-slate-100 rounded-full h-3 mb-2">
-                  <div
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
+                <div className="relative mb-8">
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 border-t-blue-600 mx-auto"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full opacity-20 animate-pulse"></div>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-600">
-                  {uploadProgress.toFixed(0)}% complete
-                </p>
+                
+                <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                  Processing Your Statement
+                </h2>
+                
+                <div className="mb-6 min-h-[2rem] flex items-center justify-center">
+                  <p 
+                    key={currentMessage}
+                    className="text-slate-600 text-lg animate-fade-in"
+                    style={{
+                      animation: 'fadeInSlideUp 0.5s ease-out'
+                    }}
+                  >
+                    {currentMessage}
+                  </p>
+                </div>
+                                
+                <div className="mb-4">
+                  <div className="bg-slate-100 rounded-full h-3 overflow-hidden relative">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 h-full rounded-full transition-all duration-300 relative"
+                      style={{ width: `${uploadProgress}%` }}
+                    >
+                      <div className="absolute inset-0 bg-white opacity-20 animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-sm text-slate-600">
+                      {uploadProgress.toFixed(1)}% complete
+                    </span>
+                    <span className="text-sm text-blue-600 font-medium">
+                      {uploadProgress < 35 ? 'Uploading' : 
+                       uploadProgress < 75 ? 'Analyzing' : 'Finalizing'}
+                    </span>
+                  </div>
+                </div>
+                                
+                <div className="flex justify-center mb-6">
+                  <div className="flex space-x-2">
+                    {[
+                      { label: 'Upload', threshold: 35 },
+                      { label: 'Parse', threshold: 55 },
+                      { label: 'Analyze', threshold: 75 },
+                      { label: 'Complete', threshold: 100 }
+                    ].map((stage, index) => (
+                      <div key={stage.label} className="flex flex-col items-center">
+                        <div 
+                          className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                            uploadProgress >= stage.threshold 
+                              ? 'bg-green-500 shadow-lg' 
+                              : uploadProgress >= (stage.threshold - 20)
+                              ? 'bg-blue-500 animate-pulse'
+                              : 'bg-slate-300'
+                          }`}
+                        />
+                        <span className="text-xs text-slate-500 mt-1">{stage.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
                 <button
                   onClick={resetUpload}
-                  className="mt-4 text-sm text-slate-600 hover:text-slate-900 transition-colors underline"
+                  className="mt-2 text-sm text-slate-600 hover:text-slate-900 transition-colors underline opacity-75 hover:opacity-100"
                 >
                   Cancel
                 </button>
@@ -355,6 +488,18 @@ export default function SpendPilot() {
           </div>
         </div>
         <Footer />
+        <style jsx>{`
+          @keyframes fadeInSlideUp {
+            0% {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}</style>
       </div>
     );
   }
