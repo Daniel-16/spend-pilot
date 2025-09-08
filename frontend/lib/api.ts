@@ -1,13 +1,14 @@
 import axios from "axios";
 
-const API_BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? process.env.NEXT_PUBLIC_API_URL
-    : "http://localhost:8000/";
+const isProduction = process.env.NODE_ENV === "production";
+
+const API_BASE_URL = isProduction
+  ? process.env.NEXT_PUBLIC_API_URL
+  : "http://localhost:8000";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 1200000,
+  timeout: 120000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -18,17 +19,13 @@ api.interceptors.request.use(
   (config) => {
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response?.status === 401) {
       console.error("Unauthorized access - redirecting to login");
     }
     return Promise.reject(error);
