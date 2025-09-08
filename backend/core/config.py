@@ -5,10 +5,9 @@ import os
 class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:8000",
-    ]
+
+    ALLOWED_ORIGINS: List[str] = []
+
     MAX_FILE_SIZE: int = 1024 * 1024 * 10
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 
@@ -16,3 +15,11 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 settings = Settings()
+
+if not settings.ALLOWED_ORIGINS:
+    settings.ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ]
+
+print("Loaded ALLOWED_ORIGINS:", settings.ALLOWED_ORIGINS)
