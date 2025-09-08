@@ -11,10 +11,10 @@ export function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
           <div className="flex items-center gap-2 sm:gap-3 mb-2 md:mb-0">
-            <div className="bg-gradient-to-r from-blue-400 to-indigo-400 p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
+            <div className="bg-blue-600 p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
               <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white" />
             </div>
-            <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="text-lg sm:text-xl md:text-2xl font-bold bg-blue-600 bg-clip-text text-transparent">
               SpendPilot
             </span>
           </div>
