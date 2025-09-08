@@ -258,7 +258,7 @@ export default function Dashboard() {
           <Button
             onClick={resetApp}
             variant="outline"
-            className="w-full sm:w-auto shadow-sm hover:shadow-md transition-shadow"
+            className="w-full sm:w-auto shadow-sm hover:shadow-md hover:bg-blue-700 hover:text-white bg-blue-500 text-white"
           >
             Upload New Statement
           </Button>
