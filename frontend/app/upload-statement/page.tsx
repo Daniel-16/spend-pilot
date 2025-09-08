@@ -333,7 +333,7 @@ export default function SpendPilot() {
                   </p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="group relative inline-flex items-center gap-2 sm:gap-3 bg-blue-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    className="group relative inline-flex items-center gap-2 sm:gap-3 bg-blue-500 text-white px-6 sm:px-8 py-3 sm:py-3 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   >
                     <div className="absolute inset-0 bg-blue-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <FileText className="h-5 w-5 sm:h-6 sm:w-6 relative z-10" />
@@ -602,31 +602,67 @@ export default function SpendPilot() {
         <Navigation />
         <div className="min-h-screen p-4 pt-24">
           <div className="max-w-4xl mx-auto mt-10">
-            <Card className="max-w-2xl mx-auto bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl">
-              <CardContent className="p-8 text-center">
-                <AlertCircle className="h-16 w-16 text-red-600 mx-auto mb-6" />
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            <Card className="max-w-2xl mx-auto bg-transparent border-0 shadow-2xl overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 via-white to-orange-50/20 pointer-events-none" />
+              <CardContent className="relative p-8 sm:p-10 text-center">
+                <div className="relative mb-4">
+                  <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+                </div>
+
+                <h2 className="text-2xl font-bold text-slate-900 mb-3 tracking-tight">
                   Upload Failed
                 </h2>
-                <Alert className="mb-6 border-red-200/60 bg-red-50 backdrop-blur-sm text-left">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-700">
-                    {error}
-                  </AlertDescription>
-                </Alert>
-                <div className="flex gap-4 justify-center">
+                
+                <p className="text-gray-700 mb-6 text-md">
+                  Don&apos;t worry, this happens sometimes. Let&apos;s get you back on track.
+                </p>                
+                <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-red-50 to-orange-50 shadow-sm">
+                  <div className="flex items-start gap-3 text-left">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                        <AlertCircle className="h-3 w-3 text-red-600" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-red-800 mb-1">Error Details</h4>
+                      <p className="text-red-700 text-sm leading-relaxed">
+                        {error}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button
                     onClick={retryUpload}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    className="group relative bg-blue-500 text-white px-4 py-3 rounded-2xl font-semibold text-md shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 overflow-hidden hover:bg-blue-700"
                   >
-                    Try Again
+                    <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-blue-700" />
+                    <div className="relative flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Try Again
+                    </div>
                   </button>
+                  
                   <button
                     onClick={resetUpload}
-                    className="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-700 transition-colors"
+                    className="group bg-white text-slate-700 border-2 border-slate-200 px-4 py-3 rounded-2xl font-semibold text-md hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-all duration-300 shadow-sm hover:shadow-md"
                   >
-                    Choose Different File
+                    <div className="flex items-center justify-center gap-2">
+                      <Upload className="w-5 h-5" />
+                      Choose Different File
+                    </div>
                   </button>
+                </div>                
+                <div className="mt-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <h4 className="font-medium text-slate-800 mb-2 text-sm">💡 Quick Tips</h4>
+                  <ul className="text-xs text-slate-600 text-left space-y-1">
+                    <li>• Ensure your file is under 10MB</li>
+                    <li>• Only PDF formats are supported</li>
+                    <li>• Check your internet connection</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
